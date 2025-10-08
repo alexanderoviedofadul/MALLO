@@ -1,0 +1,23 @@
+# Dependencias de desarrollo (NO instalar en producción)
+# Para instalar: pip install -r requirements-dev.txt
+
+# Primero instalar las dependencias de producción
+-r requirements.txt
+
+# Type checking y linting
+mypy>=1.8.0
+black>=24.1.1
+isort>=5.13.2
+flake8>=7.0.0
+types-PyYAML>=6.0.12.12
+types-requests>=2.31.0.20
+
+# Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-asyncio>=0.21.0
+
+# Modelos de Spacy para desarrollo local
+# https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.0/en_core_web_sm-3.7.0.tar.gz
+# https://github.com/explosion/spacy-models/releases/download/es_core_news_sm-3.7.0/es_core_news_sm-3.7.0.tar.gz
+

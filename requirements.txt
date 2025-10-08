@@ -5,65 +5,49 @@ typing-extensions>=4.11,<5
 pydantic>=2.5.2,<3.0.0
 streamlit>=1.31.0
 openai>=1.12.0
-pillow==10.4.0
-pytesseract==0.3.13
-PyPDF2==3.0.1
-python-docx==1.1.2
-duckduckgo-search==6.2.9
-pyyaml==6.0.2
-requests==2.32.3
-# Cambiado para resolver conflicto de dependencias
-together>=1.0.0,<1.2.0
-groq==0.9.0
-spacy==3.7.5
+pillow>=10.0.0
+pytesseract>=0.3.10
+PyPDF2>=3.0.0
+python-docx>=1.0.0
+duckduckgo-search>=6.0.0
+pyyaml>=6.0.0
+requests>=2.31.0
 setuptools>=68.0.0
 
-# OCR y procesamiento de documentos
-fpdf2>=2.7.8
-reportlab>=3.6.12
-markdown>=3.3.6
-html2text>=2020.1.16
+# AI/ML providers
+together>=1.0.0,<1.2.0
+groq>=0.9.0
+anthropic>=0.34.0
+mistralai>=1.0.0
+cohere>=5.8.0
+replicate
 
-# Spacy models
-https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.0/en_core_web_sm-3.7.0.tar.gz
-https://github.com/explosion/spacy-models/releases/download/es_core_news_sm-3.7.0/es_core_news_sm-3.7.0.tar.gz
+# OCR y procesamiento de documentos
+fpdf2>=2.7.0
+reportlab>=3.6.0
+markdown>=3.3.0
+html2text>=2020.1.0
+
+# Spacy (sin modelos pesados para reducir tamaño)
+spacy>=3.7.0,<3.8.0
 
 # Async and networking
-# asyncio (parte de la biblioteca estándar de Python en Python 3.7+)
-aiohttp>=3.9.3
+aiohttp>=3.9.0
 polars>=0.19.0,<1.5.0
-
-# AI/ML providers
-anthropic==0.34.1
-mistralai==1.0.3
-cohere==5.8.1
 
 # ML and data processing
 scikit-learn>=1.3.0,<1.5.0
 numpy>=1.26.0,<2.0.0
-replicate
 
 # Utils
-# Counter (parte de collections en la biblioteca estándar de Python)
 tavily-python
-
-# New optimization dependencies
-cachetools>=5.3.2
+cachetools>=5.3.0
 prometheus-client>=0.19.0
-orjson>=3.9.10
-APScheduler>=3.10.4
-tenacity>=8.2.3
-python-json-logger>=2.0.7
-types-PyYAML>=6.0.12.12
-types-requests>=2.31.0.20
+orjson>=3.9.0
+APScheduler>=3.10.0
+tenacity>=8.2.0
+python-json-logger>=2.0.0
 more-itertools>=10.1.0
 
-# Type checking and development
-mypy>=1.8.0
-black>=24.1.1
-isort>=5.13.2
-flake8>=7.0.0
-
-# Uso Experimental con mallo_enhancer.py
-# sentence-transformers==2.2.2
-# torch==2.1.0
+# NOTA: Las dependencias de desarrollo (mypy, black, isort, flake8)
+# se han movido a requirements-dev.txt para evitar conflictos en producción
