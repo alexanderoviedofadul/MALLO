@@ -19,6 +19,7 @@ from collections import Counter
 import yaml
 from together import Together
 from tavily import TavilyClient
+from youdotcom import You
 
 from load_secrets import load_secrets, get_secret, secrets
 
@@ -208,7 +209,7 @@ def check_groq_api() -> bool:
     try:
         client = Groq(api_key=secrets["GROQ_API_KEY"])
         client.chat.completions.create(
-            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            model="groq/compound",  # Modelo default de config.yaml
             messages=[{"role": "user", "content": "Test"}],
         )
         return True
@@ -246,18 +247,15 @@ def perform_web_search(query: str, max_retries: int = 3) -> str:
 
 def you_search(query: str) -> str:
     try:
-        headers = {"X-API-Key": get_secret("YOU_API_KEY")}
-        params = {"query": query}
-        response = requests.get(
-            "https://api.ydc-index.io/search",
-            params=params,
-            headers=headers,
-        )
-        response.raise_for_status()
-        data = response.json()
-        if "snippets" in data:
-            return "\n".join([snippet["content"] for snippet in data["snippets"][:3]])
-        return None
+        api_key = get_secret("YOU_API_KEY")
+        with You(api_key) as you:
+            res = you.search.unified(query=query)
+            # Extraer snippets de la respuesta
+            if hasattr(res, 'snippets') and res.snippets:
+                return "\n".join([snippet.text for snippet in res.snippets[:3] if hasattr(snippet, 'text')])
+            elif hasattr(res, 'results') and res.results:
+                return "\n".join([result.description for result in res.results[:3] if hasattr(result, 'description')])
+            return None
     except Exception as e:
         logging.error(f"Error in YOU search: {str(e)}")
         return None
@@ -309,7 +307,7 @@ def check_deepinfra_api() -> bool:
             base_url="https://api.deepinfra.com/v1/openai",
         )
         client.chat.completions.create(
-            model="Qwen/Qwen2.5-72B-Instruct",
+            model="nvidia/Llama-3.3-Nemotron-Super-49B-v1.5",  # Modelo default de config.yaml
             messages=[{"role": "user", "content": "Test"}],
         )
         return True
@@ -350,7 +348,8 @@ def check_mistral_api() -> bool:
     try:
         client = Mistral(api_key=secrets["MISTRAL_API_KEY"])
         client.chat.complete(
-            model="open-mistral-nemo", messages=[{"role": "user", "content": "Test"}]
+            model="mistral-small-latest",  # Modelo default de config.yaml
+            messages=[{"role": "user", "content": "Test"}]
         )
         return True
     except Exception as e:
@@ -361,7 +360,7 @@ def check_mistral_api() -> bool:
 def check_cohere_api() -> bool:
     try:
         client = cohere.Client(api_key=secrets["COHERE_API_KEY"])
-        client.chat(model="command-r7b-12-2024", message="Test")
+        client.chat(model="command-r-08-2024", message="Test")  # Modelo default de config.yaml
         return True
     except Exception as e:
         logging.error(f"Error checking Cohere API: {str(e)}")

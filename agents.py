@@ -1108,9 +1108,9 @@ class AgentManager:
 
                 # Si no se encuentra, usar un modelo por defecto seguro
                 if not found:
-                    model = "deepseek/deepseek-r1-distill-qwen-14b:free"
+                    model = "deepseek/deepseek-r1-0528:free"
                     logging.warning(
-                        f"Modelo '{model}' no encontrado en la configuración, usando modelo por defecto: {model}"
+                        f"Modelo no encontrado en la configuración, usando modelo por defecto: {model}"
                     )
 
             # Usar el cliente de OpenAI con la API de OpenRouter

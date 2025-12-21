@@ -21,6 +21,7 @@ anthropic>=0.75.0
 mistralai>=1.10.0
 cohere>=5.20.0
 replicate
+youdotcom>=0.2.0
 
 # OCR y procesamiento de documentos
 fpdf2>=2.7.0

@@ -4,6 +4,47 @@ Todos los cambios notables en el proyecto MALLO serán documentados en este arch
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/),
 y este proyecto se adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 
+## [2.8.1] - 2025-12-21
+
+### Corregido
+- Actualización de modelos descontinuados y corrección de configuración de APIs:
+  - **OpenRouter**: Cambiado modelo inexistente `deepseek/deepseek-v3.2:free` por `deepseek/deepseek-r1-0528:free`.
+  - **Cohere**: Actualizado modelo deprecado `command-r` (removido 15/09/2025) a `command-r-08-2024`.
+  - **Together**: Cambiado modelo no serverless `deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free` a `Qwen/Qwen2.5-72B-Instruct-Turbo`.
+  - **MOA (Mixture of Agents)**: Actualizado `meta-llama/Llama-Vision-Free` a modelos serverless disponibles.
+
+### Añadido
+- Integración de la nueva librería `youdotcom` para búsqueda web con YOU API:
+  - Nueva dependencia `youdotcom>=0.2.0` en requirements.txt.
+  - Actualizada función `you_search()` en utilities.py para usar la API unificada.
+  - Soporte para el nuevo formato de respuesta de YOU Search API.
+
+### Cambiado
+- Sincronización de modelos hardcodeados con config.yaml:
+  - **utilities.py**: Actualizados modelos de verificación de APIs para coincidir con config.yaml:
+    - Groq: `groq/compound`
+    - DeepInfra: `nvidia/Llama-3.3-Nemotron-Super-49B-v1.5`
+    - Mistral: `mistral-small-latest`
+    - Cohere: `command-r-08-2024`
+  - **agents.py**: Actualizado modelo de respaldo de OpenRouter a `deepseek/deepseek-r1-0528:free`.
+
+### Verificado
+- Todas las APIs probadas y funcionando correctamente:
+  - ✅ OpenAI (gpt-5-nano)
+  - ✅ Groq (groq/compound)
+  - ✅ OpenRouter (deepseek/deepseek-r1-0528:free)
+  - ✅ DeepInfra (nvidia/Llama-3.3-Nemotron-Super-49B-v1.5)
+  - ✅ Together (Qwen/Qwen2.5-72B-Instruct-Turbo)
+  - ✅ DeepSeek (deepseek-chat)
+  - ✅ Mistral (mistral-small-latest)
+  - ✅ Cohere (command-r-08-2024)
+  - ✅ YOU Search (youdotcom)
+  - ✅ Tavily (búsqueda web)
+
+### Notas
+- Anthropic API requiere recarga de créditos para funcionar.
+- Los modelos de config.yaml ahora son la fuente de verdad para toda la aplicación.
+
 ## [2.8.0] - 2025-04-15
 
 ### Añadido

@@ -1,7 +1,7 @@
 # Configuración de OpenRouter
 openrouter:
   fast_models: "google/gemini-2.0-flash-thinking-exp:free"
-  default_model: "deepseek/deepseek-v3.2:free"
+  default_model: "deepseek/deepseek-r1-0528:free"
   models:
     - name: "nvidia/nemotron-nano-9b-v2:free"
       specialty: "multimodal"
@@ -162,16 +162,6 @@ openrouter:
       ]
       prompt_types: ["general", "scientific", "historical", "philosophical", "analytical", "coding"]
 
-    - name: "deepseek/deepseek-v3.2:free"
-      specialty: "general"
-      capabilities: [
-        "advanced_reasoning",
-        "efficient_processing",
-        "knowledge_distillation",
-        "multilingual_support"
-      ]
-      prompt_types: ["general", "scientific", "historical", "philosophical", "analytical", "coding"]
-
     - name: "meta-llama/llama-3.3-8b-instruct:free"
       specialty: "general"
       capabilities: [
@@ -256,16 +246,16 @@ deepinfra:
 
 # Configuración de Together
 together:
-  fast_models: "ServiceNow-AI/Apriel-1.5-15b-Thinker"
-  default_model: "deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free"
+  fast_models: "meta-llama/Llama-3.2-3B-Instruct-Turbo"
+  default_model: "Qwen/Qwen2.5-72B-Instruct-Turbo"
   models:
-    - name: "deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free"
+    - name: "Qwen/Qwen2.5-72B-Instruct-Turbo"
       specialty: "general"
-      capabilities: ["fast_inference", "broad_knowledge", "multimodal_understanding"]
-      prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic", "multimodal"]
-    - name: "ServiceNow-AI/Apriel-1.5-15b-Thinker"
+      capabilities: ["fast_inference", "broad_knowledge", "advanced_reasoning"]
+      prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic", "coding"]
+    - name: "meta-llama/Llama-3.2-3B-Instruct-Turbo"
       specialty: "general"
-      capabilities: ["instruction_following", "large_scale", "chinese_language_proficiency"]
+      capabilities: ["instruction_following", "fast_inference", "efficient_processing"]
       prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic"]    
   max_tokens: 512
   temperature: 0.7
@@ -1202,12 +1192,12 @@ usage_limits:
 # Configuración de MOA (Mixture of Agents)
 moa:
   enabled: true
-  aggregator_model: "meta-llama/Llama-Vision-Free"
+  aggregator_model: "Qwen/Qwen2.5-72B-Instruct-Turbo"
   proposal_models:
-    - "meta-llama/Llama-Vision-Free"
+    - "Qwen/Qwen2.5-72B-Instruct-Turbo"
     - "meta-llama/Llama-3.2-3B-Instruct-Turbo"
-    - "Gryphe/MythoMax-L2-13b-Lite"
     - "mistralai/Mistral-7B-Instruct-v0.3"
+    - "Qwen/Qwen2.5-7B-Instruct-Turbo"
   max_layers: 3
   aggregator_system_prompt: "You are an expert aggregator. Synthesize the following responses into a single, coherent answer, taking into account the web context if provided."
 
@@ -1223,9 +1213,9 @@ thresholds:
 evaluation_models:
   initial:
     api: "openrouter"
-    model: "deepseek/deepseek-v3.2:free"
-    backup_api: "openrouter"
-    backup_model: "deepseek/deepseek-v3.2:free"
+    model: "deepseek/deepseek-r1-0528:free"
+    backup_api: "groq"
+    backup_model: "meta-llama/llama-4-scout-17b-16e-instruct"
     backup_api2: "openai"
     backup_model2: "gpt-4.1-nano"
   final:
@@ -1245,16 +1235,16 @@ evaluation_models:
 
 # Configuración de selección de prompts para los agentes
 prompt_selection:
-  default_model: "cohere:command-r"  # Modelo por defecto para selección de prompt
+  default_model: "cohere:command-r-08-2024"  # Modelo por defecto para selección de prompt
   fallback_type: "default"  # Tipo de prompt a usar si no se puede determinar
   threshold: 0.6  # Umbral de confianza para la selección automática
 
 # Configuración de selección de agentes
 agent_selection:
-  default_model: "cohere:command-r"
+  default_model: "cohere:command-r-08-2024"
   fallback_type: "Asistente de Inteligencia Artificial"
   threshold: 0.6
-  validation_model: "command-r"
+  validation_model: "command-r-08-2024"
 
 # Configuración de proveedores de busqueda web
 utilities:
