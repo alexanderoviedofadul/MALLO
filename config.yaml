@@ -1212,12 +1212,12 @@ thresholds:
 # Configuración de evaluación de modelos
 evaluation_models:
   initial:
-    api: "openrouter"
-    model: "deepseek/deepseek-r1-0528:free"
-    backup_api: "groq"
-    backup_model: "meta-llama/llama-4-scout-17b-16e-instruct"
-    backup_api2: "openai"
-    backup_model2: "gpt-5-nano"
+    api: "deepseek"
+    model: "deepseek-chat"
+    backup_api: "openai"
+    backup_model: "gpt-5-nano"
+    backup_api2: "groq"
+    backup_model2: "meta-llama/llama-4-scout-17b-16e-instruct"
   final:
     api: "openai"
     model: "gpt-5-nano"
