@@ -1244,16 +1244,16 @@ evaluation_models:
 
 # Configuración de selección de prompts para los agentes
 prompt_selection:
-  default_model: "cohere:command-r-plus"  # Modelo por defecto para selección de prompt
+  default_model: "cohere:command-r"  # Modelo por defecto para selección de prompt
   fallback_type: "default"  # Tipo de prompt a usar si no se puede determinar
   threshold: 0.6  # Umbral de confianza para la selección automática
 
 # Configuración de selección de agentes
 agent_selection:
-  default_model: "cohere:command-r-plus"
+  default_model: "cohere:command-r"
   fallback_type: "Asistente de Inteligencia Artificial"
   threshold: 0.6
-  validation_model: "command-r-plus"
+  validation_model: "command-r"
 
 # Configuración de proveedores de busqueda web
 utilities:

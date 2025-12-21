@@ -611,7 +611,7 @@ class AgentManager:
             try:
                 # Usar un modelo que sabemos que existe en Groq
                 client.chat.completions.create(
-                    model="llama3-8b-8192",
+                    model="llama-3.1-8b-instant",  # Modelo disponible en Groq
                     messages=[{"role": "user", "content": "Test"}],
                     max_tokens=5,  # Usar pocos tokens para la prueba
                 )

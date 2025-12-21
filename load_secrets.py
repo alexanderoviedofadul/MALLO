@@ -70,12 +70,16 @@ def load_secrets():
                 except Exception as e:
                     logger.error(f"Error al leer {file_path}: {str(e)}")
 
-    # Cargar desde variables de entorno
+    # Cargar desde variables de entorno (solo si no existen en secrets.toml)
     for key, value in os.environ.items():
         if key.startswith('MALLO_'):
+            # Siempre cargar variables MALLO_ (son específicas de la aplicación)
             secrets._secrets[key[6:]] = value
         elif key in ['OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'TOGETHER_API_KEY']:
-            secrets._secrets[key] = value
+            # Solo cargar si no existe en secrets.toml o si es un placeholder
+            current_value = secrets._secrets.get(key, '')
+            if key not in secrets._secrets or current_value.startswith('YOUR_') or not current_value.startswith('sk-'):
+                secrets._secrets[key] = value
 
     logger.info(f"Carga de secretos completada. {len(secrets._secrets)} secretos cargados.")
 
