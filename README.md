@@ -545,6 +545,7 @@ Consulta [CHANGELOG.md](CHANGELOG.md) para ver el historial detallado de cambios
 
 ### Versiones Recientes
 
+- **v2.8.2** (21/12/2025): Correcciones de estabilidad en clientes API (proxies), búsqueda YOU, cambio de modelo de evaluación inicial a DeepSeek-Chat y automatización de despliegue.
 - **v2.8.1** (21/12/2025): Actualización de modelos descontinuados, integración de librería youdotcom para YOU Search API, y sincronización de modelos hardcodeados con config.yaml.
 - **v2.8.0** (15/04/2025): Implementación de personalización de etapas de procesamiento, selección de modelos y mejoras en la interfaz de usuario.
 - **v2.7.0** (14/04/2025): Implementación de sistema robusto de manejo de errores para OpenRouter API y mejora de la interfaz de usuario.

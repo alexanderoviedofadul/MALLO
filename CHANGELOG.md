@@ -4,6 +4,21 @@ Todos los cambios notables en el proyecto MALLO serán documentados en este arch
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/),
 y este proyecto se adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 
+## [2.8.2] - 2025-12-21
+
+### Corregido
+- Solución al error de inicialización `proxies` en clientes Groq y Anthropic mediante reintento automático sin el argumento.
+- Corrección del error `TypeError` en la búsqueda de YOU Search API validando la estructura de la respuesta.
+- Cambio de modelo de evaluación inicial de `openrouter:deepseek/deepseek-r1-0528:free` a `deepseek:deepseek-chat` para resolver errores de respuesta inválida.
+
+### Mejorado
+- Logging más robusto y detallado para las respuestas de OpenRouter en `agents.py`.
+- Validación de respuestas vacías en el cliente de OpenRouter.
+- Actualización de `commit-simple.sh` para realizar push automático a GitHub sin confirmación y corrección de falso positivo en detección de conflictos.
+
+### Documentación
+- Creación de `docs/DEV_NOTES.md` para documentar detalles técnicos de correcciones y mantenimiento.
+
 ## [2.8.1] - 2025-12-21
 
 ### Corregido
