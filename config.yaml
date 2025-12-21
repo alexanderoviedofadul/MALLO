@@ -1,7 +1,7 @@
 # Configuración de OpenRouter
 openrouter:
   fast_models: "google/gemini-2.0-flash-thinking-exp:free"
-  default_model: "deepseek/deepseek-r1-distill-qwen-14b:free"
+  default_model: "deepseek/deepseek-v3.2:free"
   models:
     - name: "nvidia/nemotron-nano-9b-v2:free"
       specialty: "multimodal"
@@ -162,12 +162,13 @@ openrouter:
       ]
       prompt_types: ["general", "scientific", "historical", "philosophical", "analytical", "coding"]
 
-    - name: "deepseek/deepseek-r1-distill-qwen-14b:free"
+    - name: "deepseek/deepseek-v3.2:free"
       specialty: "general"
       capabilities: [
         "advanced_reasoning",
         "efficient_processing",
-        "knowledge_distillation"
+        "knowledge_distillation",
+        "multilingual_support"
       ]
       prompt_types: ["general", "scientific", "historical", "philosophical", "analytical", "coding"]
 
@@ -1222,9 +1223,9 @@ thresholds:
 evaluation_models:
   initial:
     api: "openrouter"
-    model: "deepseek/deepseek-r1-distill-qwen-14b:free"
+    model: "deepseek/deepseek-v3.2:free"
     backup_api: "openrouter"
-    backup_model: "deepseek/deepseek-r1:free"
+    backup_model: "deepseek/deepseek-v3.2:free"
     backup_api2: "openai"
     backup_model2: "gpt-4.1-nano"
   final:
