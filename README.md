@@ -280,9 +280,9 @@ ollama:
     - "llava:latest"
 
 openai:
-  default_model: "gpt-4.1-nano"
+  default_model: "gpt-5-nano"
   models:
-    - "gpt-4.1-nano"
+    - "gpt-5-nano"
 
 # ... (otras configuraciones)
 
