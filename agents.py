@@ -583,7 +583,22 @@ class AgentManager:
     # Procesar la consulta con el agente seleccionado
     def init_client(self, client_name: str, client_class, api_key: str, **kwargs):
         try:
+            # Debug: check kwargs
+            if 'proxies' in kwargs:
+                logging.warning(f"init_client for {client_name} received 'proxies' in kwargs")
+            
             return client_class(api_key=api_key, **kwargs)
+        except TypeError as e:
+            if "proxies" in str(e):
+                 logging.warning(f"Error initializing {client_name}: {e}. Retrying without 'proxies' if present.")
+                 if 'proxies' in kwargs:
+                     kwargs.pop('proxies')
+                     try:
+                         return client_class(api_key=api_key, **kwargs)
+                     except Exception as e2:
+                         logging.error(f"Retry failed for {client_name}: {e2}")
+            logging.warning(f"Error al inicializar {client_name} client: {str(e)}")
+            return None
         except Exception as e:
             logging.warning(f"Error al inicializar {client_name} client: {str(e)}")
             return None
@@ -1137,6 +1152,10 @@ class AgentManager:
 
             # Llamar a la API con el cliente temporal
             response = openrouter_client.chat.completions.create(**params)
+            if not response.choices or not response.choices[0].message.content:
+                 logging.warning(f"OpenRouter response empty or invalid: {response}")
+                 return "Error: Respuesta vacía de OpenRouter"
+            
             return response.choices[0].message.content
 
         except Exception as e:

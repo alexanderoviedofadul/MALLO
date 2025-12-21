@@ -207,6 +207,18 @@ def check_together_api() -> bool:
 
 def check_groq_api() -> bool:
     try:
+        import inspect
+        logging.info(f"Checking Groq API. Class: {Groq}")
+        try:
+            sig = inspect.signature(Groq.__init__)
+            logging.info(f"Groq signature: {sig}")
+        except:
+            pass
+            
+        # Check if proxies is somehow injected in globals or builtins
+        if 'proxies' in globals():
+            logging.warning(f"Found 'proxies' in globals: {globals()['proxies']}")
+
         client = Groq(api_key=secrets["GROQ_API_KEY"])
         client.chat.completions.create(
             model="groq/compound",  # Modelo default de config.yaml
@@ -215,6 +227,9 @@ def check_groq_api() -> bool:
         return True
     except Exception as e:
         logging.error(f"Error checking Groq API: {str(e)}")
+        # If it's the specific proxies error, try to workaround or log more
+        if "proxies" in str(e):
+             logging.error("CRITICAL: 'proxies' argument error detected.")
         return False
 
 
@@ -250,11 +265,37 @@ def you_search(query: str) -> str:
         api_key = get_secret("YOU_API_KEY")
         with You(api_key) as you:
             res = you.search.unified(query=query)
-            # Extraer snippets de la respuesta
-            if hasattr(res, 'snippets') and res.snippets:
-                return "\n".join([snippet.text for snippet in res.snippets[:3] if hasattr(snippet, 'text')])
-            elif hasattr(res, 'results') and res.results:
-                return "\n".join([result.description for result in res.results[:3] if hasattr(result, 'description')])
+            # Debug logging
+            logging.info(f"YOU search response type: {type(res)}")
+            if hasattr(res, 'results'):
+                 logging.info(f"YOU search res.results type: {type(res.results)}")
+                 if hasattr(res.results, 'web'):
+                     logging.info(f"YOU search res.results.web type: {type(res.results.web)}")
+            
+            # Extraer resultados web de la respuesta
+            if hasattr(res, 'results') and res.results:
+                # Handle potential structure changes
+                web_results = getattr(res.results, 'web', None)
+                if not web_results and isinstance(res.results, dict):
+                    web_results = res.results.get('web')
+                
+                if web_results:
+                     # Check if it is a list
+                     if isinstance(web_results, list):
+                        snippets = []
+                        for result in web_results[:3]:
+                            if hasattr(result, 'description') and result.description:
+                                snippets.append(result.description)
+                            elif hasattr(result, 'snippets') and result.snippets:
+                                snippets.extend(result.snippets[:2])
+                            elif isinstance(result, dict):
+                                if 'description' in result:
+                                    snippets.append(result['description'])
+                                elif 'snippets' in result:
+                                    snippets.extend(result['snippets'][:2])
+                        return "\n".join(snippets) if snippets else None
+                     else:
+                         logging.warning(f"YOU search 'web' is not a list: {type(web_results)}")
             return None
     except Exception as e:
         logging.error(f"Error in YOU search: {str(e)}")
