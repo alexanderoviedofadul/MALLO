@@ -4,6 +4,46 @@ Todos los cambios notables en el proyecto MALLO serán documentados en este arch
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/),
 y este proyecto se adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 
+## [2.8.4] - 2025-12-21
+
+### Corregido
+- **Compatibilidad con GPT-5**: Ajustado `_process_with_openai_like_client()` para manejar restricciones de modelos GPT-5, o1 y o3:
+  - Uso de `max_completion_tokens` en lugar de `max_tokens`
+  - Exclusión del parámetro `temperature` (solo soporta default=1)
+- **OpenRouter API**: Corregido error `max_output_tokens` (mínimo 16 requerido por Azure backend):
+  - `check_openrouter_api()`: Cambiado modelo a `deepseek/deepseek-r1-0528:free` con `max_tokens=20`
+  - `init_openrouter_client()`: Actualizado con los mismos parámetros
+- **Z.AI y RouteLLM**: Corregido `max_tokens` de 5 a 20 en funciones de inicialización
+
+### Añadido
+- **Estado del Sistema**: Z.AI API y RouteLLM API ahora aparecen en "🔧 Sistema → Estado de los componentes"
+- **Métodos de procesamiento**:
+  - `process_with_z_ai()`: Procesar consultas con GLM-4.6
+  - `process_with_routellm()`: Procesar consultas con route-llm
+- **Integración completa**: Z.AI y RouteLLM agregados a:
+  - `get_available_models()`
+  - `get_available_agents()`
+  - `get_agent_priority()`
+  - `processing_priority` en config.yaml
+
+### Cambiado
+- **MOA (Mixture of Agents)**: Actualizada configuración con modelos verificados y optimizados:
+  - Agregador: `meta-llama/Llama-3.3-70B-Instruct-Turbo` (potente para síntesis)
+  - Propuestas: `Qwen/Qwen2.5-72B-Instruct-Turbo`, `Meta-Llama-3.1-8B-Instruct-Turbo`, `Mistral-7B-Instruct-v0.3`, `Qwen2.5-7B-Instruct-Turbo`
+- **evaluation_models**: Actualizada configuración con modelos funcionales:
+  - Initial: `deepseek-chat` → backup `groq/compound` → `llama-3.1-8b-instant`
+  - Final: `llama-3.3-70b-versatile` → backup `deepseek-reasoner` → `Qwen/Qwen2.5-72B-Instruct`
+  - Meta-analysis: `deepseek-reasoner` → backup `Qwen/Qwen2.5-72B-Instruct` → `llama-3.3-70b-versatile`
+- **Modelos discontinuados eliminados**: `deepseek-r1-distill-qwen-32b`, `mixtral-8x7b-32768`, `gemma2-9b-it`
+
+### Verificado
+- ✅ 26/26 Specialized Assistants funcionando correctamente
+- ✅ GPT-5-nano: Funciona con parámetros correctos
+- ✅ Todos los modelos de Together para MOA verificados
+- ✅ Modelos de Groq actualizados y verificados
+- ✅ Modelos de DeepInfra verificados
+- ✅ Z.AI y RouteLLM en estado del sistema
+
 ## [2.8.3] - 2025-12-21
 
 ### Añadido

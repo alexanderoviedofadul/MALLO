@@ -687,11 +687,11 @@ class AgentManager:
         )
         if client:
             try:
-                # Probar el cliente con un modelo gratuito
+                # Probar el cliente con un modelo gratuito de DeepSeek
                 client.chat.completions.create(
-                    model="openai/gpt-5-nano",
+                    model="deepseek/deepseek-r1-0528:free",
                     messages=[{"role": "user", "content": "Test"}],
-                    max_tokens=5,  # Usar pocos tokens para la prueba
+                    max_tokens=20,  # Mínimo 16 requerido por algunos backends (Azure)
                 )
                 return client
             except Exception as e:
@@ -712,7 +712,7 @@ class AgentManager:
                 client.chat.completions.create(
                     model="glm-4.6",
                     messages=[{"role": "user", "content": "Test"}],
-                    max_tokens=5,  # Usar pocos tokens para la prueba
+                    max_tokens=20,  # Mínimo 16 requerido por algunos backends
                 )
                 return client
             except Exception as e:
@@ -733,7 +733,7 @@ class AgentManager:
                 client.chat.completions.create(
                     model="route-llm",
                     messages=[{"role": "user", "content": "Test"}],
-                    max_tokens=5,  # Usar pocos tokens para la prueba
+                    max_tokens=20,  # Mínimo 16 requerido por algunos backends
                 )
                 return client
             except Exception as e:
@@ -1086,6 +1086,18 @@ class AgentManager:
         )
         return response.text
 
+    def process_with_z_ai(self, query: str, model: str) -> str:
+        """Procesar consulta con Z.AI (GLM-4.6)"""
+        return self._process_with_openai_like_client(
+            self.clients["z-ai"], query, model
+        )
+
+    def process_with_routellm(self, query: str, model: str) -> str:
+        """Procesar consulta con RouteLLM"""
+        return self._process_with_openai_like_client(
+            self.clients["routellm"], query, model
+        )
+
     def process_with_local_model(self, query: str, model: str) -> str:
         try:
             url = f"{self.config['ollama']['base_url']}/api/generate"
@@ -1218,12 +1230,29 @@ class AgentManager:
 
     def _process_with_openai_like_client(self, client, query: str, model: str) -> str:
         try:
-            response = client.chat.completions.create(
-                model=model,
-                messages=[{"role": "user", "content": query}],
-                temperature=self.config["general"]["temperature"],
-                max_tokens=self.config["general"]["max_tokens"],
+            # Parámetros base
+            params = {
+                "model": model,
+                "messages": [{"role": "user", "content": query}],
+            }
+
+            # GPT-5, o1 y o3 tienen restricciones especiales:
+            # - Usan max_completion_tokens en lugar de max_tokens
+            # - No soportan temperature diferente de 1
+            is_restricted_model = (
+                model.startswith("gpt-5") or
+                model.startswith("o1") or
+                model.startswith("o3")
             )
+
+            if is_restricted_model:
+                params["max_completion_tokens"] = self.config["general"]["max_tokens"]
+                # No agregar temperature (usa default=1)
+            else:
+                params["max_tokens"] = self.config["general"]["max_tokens"]
+                params["temperature"] = self.config["general"]["temperature"]
+
+            response = client.chat.completions.create(**params)
             return response.choices[0].message.content
         except Exception as e:
             return f"Error al procesar con API: {str(e)}"
@@ -1331,12 +1360,14 @@ class AgentManager:
                 "groq": self.config["groq"]["models"],
                 "together": self.together_models,
                 "local": self.ollama_models,
-                "openrouter": self.config["openrouter"]["models"],  # Añadido OpenRouter
+                "openrouter": self.config["openrouter"]["models"],
                 "deepinfra": self.config["deepinfra"]["models"],
                 "anthropic": self.config["anthropic"]["models"],
                 "deepseek": self.config["deepseek"]["models"],
                 "mistral": self.config["mistral"]["models"],
                 "cohere": self.config["cohere"]["models"],
+                "z-ai": self.config["z-ai"]["models"],
+                "routellm": self.config["routellm"]["models"],
             }.get(agent_type, [])
 
             # Procesar los modelos para manejar diferentes formatos
@@ -1360,6 +1391,8 @@ class AgentManager:
                 "deepseek",
                 "mistral",
                 "cohere",
+                "z-ai",
+                "routellm",
             ]:
                 all_agents.extend(self.get_available_agents(agent_type))
             return all_agents
@@ -1386,6 +1419,8 @@ class AgentManager:
                 "deepseek",
                 "mistral",
                 "cohere",
+                "z-ai",
+                "routellm",
             ]:
                 # Verificar si el cliente está inicializado
                 if agent_type not in ["local"] and not self.clients.get(agent_type):

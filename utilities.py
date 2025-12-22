@@ -162,6 +162,8 @@ def initialize_system(config: Dict[str, Any]) -> Dict[str, bool]:
         "Cohere API": check_cohere_api(),
         "OpenRouter API": check_openrouter_api(),
         "Together API": check_together_api(),
+        "Z.AI API": check_z_ai_api(),
+        "RouteLLM API": check_routellm_api(),
     }
     logging.info(f"System status: {status}")
     return status
@@ -479,8 +481,9 @@ def check_openrouter_api() -> bool:
                 "Content-Type": "application/json",
             },
             json={
-                "model": "openai/gpt-5-nano",  # Usar un modelo más común
+                "model": "deepseek/deepseek-r1-0528:free",  # Usar modelo gratuito de DeepSeek
                 "messages": [{"role": "user", "content": "Test"}],
+                "max_tokens": 20,  # Mínimo 16 requerido por algunos backends
             },
             timeout=10,
         )

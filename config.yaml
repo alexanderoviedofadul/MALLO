@@ -276,7 +276,7 @@ openai:
   models:
     - name: "gpt-5-nano"
       specialty: "general"
-      capabilities: ["fast_inference", "broad_knowledge", "multimodal_understanding"] # Assuming gpt-5-nano supports images and potentially other modalities
+      capabilities: ["fast_inference", "broad_knowledge", "multimodal_understanding", "400k_context"]
       prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic", "multimodal"]
   master_model: "gpt-5-nano"
 
@@ -1161,6 +1161,8 @@ processing_priority:
   - openrouter
   - deepinfra
   - deepseek
+  - z-ai
+  - routellm
   - specialized_assistants
   - moa
   - together
@@ -1212,12 +1214,12 @@ usage_limits:
 # Configuración de MOA (Mixture of Agents)
 moa:
   enabled: true
-  aggregator_model: "Qwen/Qwen2.5-72B-Instruct-Turbo"
+  aggregator_model: "meta-llama/Llama-3.3-70B-Instruct-Turbo"  # Modelo potente para síntesis final
   proposal_models:
-    - "Qwen/Qwen2.5-72B-Instruct-Turbo"
-    - "meta-llama/Llama-3.2-3B-Instruct-Turbo"
-    - "mistralai/Mistral-7B-Instruct-v0.3"
-    - "Qwen/Qwen2.5-7B-Instruct-Turbo"
+    - "Qwen/Qwen2.5-72B-Instruct-Turbo"         # Excelente razonamiento
+    - "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"  # Rápido y económico
+    - "mistralai/Mistral-7B-Instruct-v0.3"      # Equilibrado
+    - "Qwen/Qwen2.5-7B-Instruct-Turbo"          # Rápido, buen rendimiento
   max_layers: 3
   aggregator_system_prompt: "You are an expert aggregator. Synthesize the following responses into a single, coherent answer, taking into account the web context if provided."
 
@@ -1233,25 +1235,25 @@ thresholds:
 evaluation_models:
   initial:
     api: "deepseek"
-    model: "deepseek-chat"
-    backup_api: "openai"
-    backup_model: "gpt-5-nano"
-    backup_api2: "groq"
-    backup_model2: "meta-llama/llama-4-scout-17b-16e-instruct"
-  final:
-    api: "openai"
-    model: "gpt-5-nano"
+    model: "deepseek-chat"  # Rápido y económico para evaluación inicial
     backup_api: "groq"
-    backup_model: "deepseek-r1-distill-qwen-32b"
-    backup_api2: "deepseek"
-    backup_model2: "deepseek-reasoner"
+    backup_model: "groq/compound"  # Fallback rápido con búsqueda web
+    backup_api2: "groq"
+    backup_model2: "llama-3.1-8b-instant"  # Ultra rápido
+  final:
+    api: "groq"
+    model: "llama-3.3-70b-versatile"  # Alta calidad para evaluación final
+    backup_api: "deepseek"
+    backup_model: "deepseek-reasoner"  # Razonamiento profundo
+    backup_api2: "deepinfra"
+    backup_model2: "Qwen/Qwen2.5-72B-Instruct"  # Alternativa potente
   meta_analysis:
-    api: "openai"
-    model: "gpt-5-nano"
+    api: "deepseek"
+    model: "deepseek-reasoner"  # Mejor para meta-análisis y síntesis
     backup_api: "deepinfra"
-    backup_model: "Qwen/Qwen2.5-72B-Instruct"
-    backup_api2: "deepseek"
-    backup_model2: "deepseek-reasoner"
+    backup_model: "Qwen/Qwen2.5-72B-Instruct"  # Excelente razonamiento
+    backup_api2: "groq"
+    backup_model2: "llama-3.3-70b-versatile"  # Alternativa verificada
 
 # Configuración de selección de prompts para los agentes
 prompt_selection:
