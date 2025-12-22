@@ -294,6 +294,26 @@ deepseek:
       capabilities: ["advanced_reasoning", "large_context"]
       prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic"]
 
+# Configuración de Z.AI (proveedor de GLM)
+z-ai:
+  fast_models: "glm-4.6"
+  default_model: "glm-4.6"
+  models:
+    - name: "glm-4.6"
+      specialty: "general"
+      capabilities: ["advanced_reasoning", "multimodal", "multilingual_support", "chinese_language_proficiency"]
+      prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "analytical"]
+
+# Configuración de RouteLLM
+routellm:
+  fast_models: "route-llm"
+  default_model: "route-llm"
+  models:
+    - name: "route-llm"
+      specialty: "general"
+      capabilities: ["intelligent_routing", "cost_optimization", "performance_balancing"]
+      prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "analytical"]
+
 
   # Configuración de Mistral
 mistral:

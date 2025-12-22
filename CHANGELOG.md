@@ -4,6 +4,47 @@ Todos los cambios notables en el proyecto MALLO serán documentados en este arch
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/),
 y este proyecto se adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 
+## [2.8.3] - 2025-12-21
+
+### Añadido
+- **Integración de nuevos proveedores de LLM**:
+  - **Z.AI**: Implementado cliente para el modelo GLM-4.6 con capacidades avanzadas de razonamiento, soporte multimodal y multilingüe.
+  - **RouteLLM**: Integrado cliente para el modelo route-llm con sistema inteligente de enrutamiento y optimización de costos.
+  
+- **Configuración extendida**:
+  - Agregada configuración completa en `config.yaml` para ambos proveedores con especialidades, capacidades y tipos de prompt.
+  - Definidos modelos por defecto: `glm-4.6` (Z.AI) y `route-llm` (RouteLLM).
+
+- **Funciones de verificación de APIs**:
+  - `check_z_ai_api()`: Verificación de conectividad con API de Z.AI.
+  - `check_routellm_api()`: Verificación de conectividad con API de RouteLLM.
+
+- **Clientes en AgentManager**:
+  - `init_z_ai_client()`: Inicialización del cliente Z.AI con URL base `https://api.z.ai/api/paas/v4/`.
+  - `init_routellm_client()`: Inicialización del cliente RouteLLM con URL base `https://routellm.abacus.ai/v1`.
+
+- **Integración en interfaz de usuario**:
+  - Modelos agregados al menú de selección en `main.py` con nombres descriptivos.
+  - Organización por proveedor: "Z.AI" y "RouteLLM".
+
+### Cambiado
+- **AgentManager**: Actualizada lista de proveedores disponibles para incluir los nuevos clientes.
+- **get_available_models()**: Extendido para soportar los modelos de Z.AI y RouteLLM.
+- **utilities.py**: Agregados nuevos proveedores al sistema de gestión de modelos.
+- **main.py**: Actualizado diccionario de proveedores para mostrar correctamente en la interfaz.
+
+### Verificado
+- ✅ Z.AI API: Funcionando correctamente (GLM-4.6)
+- ✅ RouteLLM API: Funcionando correctamente (route-llm)
+- ✅ Integración completa en el sistema de orquestación de MALLO
+- ✅ Modelos disponibles en el menú de selección de la interfaz
+
+### Notas
+- Las API keys ya están configuradas en `.streamlit/secrets.toml`:
+  - `ZAI_API_KEY`: Para Z.AI GLM-4.6
+  - `ROUTELLM_API_KEY`: Para RouteLLM
+- Ambos proveedores utilizan la librería OpenAI con diferentes URLs base, manteniendo consistencia en la implementación.
+
 ## [2.8.2] - 2025-12-21
 
 ### Corregido

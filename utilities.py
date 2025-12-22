@@ -398,6 +398,40 @@ def check_mistral_api() -> bool:
         return False
 
 
+def check_z_ai_api() -> bool:
+    try:
+        client = OpenAI(
+            api_key=secrets["ZAI_API_KEY"],
+            base_url="https://api.z.ai/api/paas/v4/",
+        )
+        client.chat.completions.create(
+            model="glm-4.6",  # Modelo default de config.yaml
+            messages=[{"role": "user", "content": "Test"}],
+            max_tokens=10,
+        )
+        return True
+    except Exception as e:
+        logging.error(f"Error checking Z.AI API: {str(e)}")
+        return False
+
+
+def check_routellm_api() -> bool:
+    try:
+        client = OpenAI(
+            api_key=secrets["ROUTELLM_API_KEY"],
+            base_url="https://routellm.abacus.ai/v1",
+        )
+        client.chat.completions.create(
+            model="route-llm",  # Modelo default de config.yaml
+            messages=[{"role": "user", "content": "Test"}],
+            max_tokens=10,
+        )
+        return True
+    except Exception as e:
+        logging.error(f"Error checking RouteLLM API: {str(e)}")
+        return False
+
+
 def check_cohere_api() -> bool:
     try:
         client = cohere.Client(api_key=secrets["COHERE_API_KEY"])
@@ -445,7 +479,7 @@ def check_openrouter_api() -> bool:
                 "Content-Type": "application/json",
             },
             json={
-                "model": "openai/gpt-3.5-turbo",  # Usar un modelo más común
+                "model": "openai/gpt-5-nano",  # Usar un modelo más común
                 "messages": [{"role": "user", "content": "Test"}],
             },
             timeout=10,

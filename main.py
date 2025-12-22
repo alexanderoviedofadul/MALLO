@@ -635,6 +635,8 @@ def render_sidebar_content(
                 available_models.extend(process_provider_models("mistral"))
                 available_models.extend(process_provider_models("cohere"))
                 available_models.extend(process_provider_models("openrouter"))
+                available_models.extend(process_provider_models("z-ai"))
+                available_models.extend(process_provider_models("routellm"))
 
                 # Agregar modelos locales (Ollama)
                 try:
@@ -709,6 +711,8 @@ def render_sidebar_content(
                     "mistral": "Mistral",
                     "cohere": "Cohere",
                     "together": "Together",
+                    "z-ai": "Z.AI",
+                    "routellm": "RouteLLM",
                     "assistant": "Asistentes",
                 }
 
@@ -1472,7 +1476,7 @@ def process_user_input(
                 # Intentar usar un modelo de OpenAI como respaldo
                 try:
                     prioritized_agents.append(
-                        ("api", "gpt-3.5-turbo", "OpenAI GPT-3.5 Turbo (Respaldo)")
+                        ("api", "gpt-5-nano", "OpenAI GPT-3.5 Turbo (Respaldo)")
                     )
                     logging.warning(
                         "No se encontraron agentes válidos en la configuración personalizada. Usando modelo de respaldo."

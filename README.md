@@ -498,6 +498,8 @@ MALLO integra varios servicios de LLM y APIs, incluyendo:
 - Cohere (Command R+, Command R)
 - Ollama (modelos locales)
 - OpenRouter (acceso a modelos gratuitos y de pago)
+- **Z.AI** (GLM-4.6 - modelo avanzado con capacidades multimodales y soporte multilingüe)
+- **RouteLLM** (Route-LLM - sistema inteligente de enrutamiento y optimización de costos)
 
 Cada servicio se inicializa y gestiona a través de la clase `AgentManager` y el módulo `model_loader.py`, permitiendo una fácil expansión a nuevos proveedores en el futuro. Los modelos se organizan por proveedor con nombres descriptivos para facilitar su selección.
 

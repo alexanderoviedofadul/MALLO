@@ -171,6 +171,14 @@ class AgentManager:
         if openrouter_client:
             self.clients["openrouter"] = openrouter_client
 
+        z_ai_client = self.init_z_ai_client()
+        if z_ai_client:
+            self.clients["z-ai"] = z_ai_client
+
+        routellm_client = self.init_routellm_client()
+        if routellm_client:
+            self.clients["routellm"] = routellm_client
+
     def get_specialized_assistant(self, assistant_id: str) -> Optional[Dict[str, Any]]:
         """
         Obtiene un asistente especializado por su ID.
@@ -360,6 +368,8 @@ class AgentManager:
                 "deepseek": self.config["deepseek"]["models"],
                 "mistral": self.config["mistral"]["models"],
                 "cohere": self.config["cohere"]["models"],
+                "z-ai": self.config["z-ai"]["models"],
+                "routellm": self.config["routellm"]["models"],
             }.get(agent_type, [])
 
             # Procesar los modelos para manejar diferentes formatos
@@ -383,6 +393,8 @@ class AgentManager:
                 "cohere",
                 "api",
                 "local",
+                "z-ai",
+                "routellm",
             ]:
                 all_agents.extend(self.get_available_models(agent_type))
             return all_agents
@@ -677,13 +689,55 @@ class AgentManager:
             try:
                 # Probar el cliente con un modelo gratuito
                 client.chat.completions.create(
-                    model="openai/gpt-3.5-turbo",
+                    model="openai/gpt-5-nano",
                     messages=[{"role": "user", "content": "Test"}],
                     max_tokens=5,  # Usar pocos tokens para la prueba
                 )
                 return client
             except Exception as e:
                 logging.error(f"Error checking OpenRouter API: {str(e)}")
+        return None
+
+    # Inicializar el cliente de Z.AI
+    def init_z_ai_client(self):
+        client = self.init_client(
+            "Z.AI",
+            OpenAI,
+            get_secret("ZAI_API_KEY"),
+            base_url="https://api.z.ai/api/paas/v4/",
+        )
+        if client:
+            try:
+                # Probar el cliente con el modelo GLM-4.6
+                client.chat.completions.create(
+                    model="glm-4.6",
+                    messages=[{"role": "user", "content": "Test"}],
+                    max_tokens=5,  # Usar pocos tokens para la prueba
+                )
+                return client
+            except Exception as e:
+                logging.error(f"Error checking Z.AI API: {str(e)}")
+        return None
+
+    # Inicializar el cliente de RouteLLM
+    def init_routellm_client(self):
+        client = self.init_client(
+            "RouteLLM",
+            OpenAI,
+            get_secret("ROUTELLM_API_KEY"),
+            base_url="https://routellm.abacus.ai/v1",
+        )
+        if client:
+            try:
+                # Probar el cliente con el modelo route-llm
+                client.chat.completions.create(
+                    model="route-llm",
+                    messages=[{"role": "user", "content": "Test"}],
+                    max_tokens=5,  # Usar pocos tokens para la prueba
+                )
+                return client
+            except Exception as e:
+                logging.error(f"Error checking RouteLLM API: {str(e)}")
         return None
 
     # Procesar la consulta con el agente seleccionado
