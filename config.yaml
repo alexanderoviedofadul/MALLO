@@ -1,7 +1,7 @@
 # Configuración de OpenRouter
 openrouter:
-  fast_models: "google/gemini-2.0-flash-thinking-exp:free"
-  default_model: "deepseek/deepseek-r1:free"
+  fast_models: "openai/gpt-oss-20b:free"
+  default_model: "meta-llama/llama-3.3-70b-instruct:free"
   models:
     - name: "nvidia/nemotron-nano-9b-v2:free"
       specialty: "multimodal"
@@ -16,16 +16,6 @@ openrouter:
         "image_reasoning"
       ]
       prompt_types: ["general", "scientific", "multimodal", "visual", "analytical", "coding"]
-
-    - name: "deepseek/deepseek-r1:free"
-      specialty: "general"
-      capabilities: [
-        "advanced_reasoning",
-        "multi_task",
-        "code_generation",
-        "math_solving"
-      ]
-      prompt_types: ["general", "scientific", "analytical", "coding", "math"]
 
     - name: "openai/gpt-oss-20b:free"
       specialty: "general"
@@ -47,63 +37,6 @@ openrouter:
       ]
       prompt_types: ["general", "scientific", "visual", "analytical", "cultural"]
 
-    - name: "qwen/qwen-2.5-coder-32b-instruct:free"
-      specialty: "coding"
-      capabilities: [
-        "advanced_reasoning",
-        "multi_task",
-        "instruction_optimized",
-        "code_generation"
-      ]
-      prompt_types: ["general", "scientific", "analytical", "coding"]
-
-    - name: "moonshotai/kimi-vl-a3b-thinking:free"
-      specialty: "multimodal"
-      capabilities: [
-        "vision_understanding",
-        "creative_writing",
-        "advanced_reasoning"
-      ]
-      prompt_types: ["creative", "visual", "multimodal", "analytical"]
-
-    - name: "cognitivecomputations/dolphin3.0-r1-mistral-24b:free"
-      specialty: "general"
-      capabilities: [
-        "instruction_optimized",
-        "efficient_processing",
-        "multilingual_support",
-        "uncensored"
-      ]
-      prompt_types: ["general", "creative", "philosophical", "ethical", "cultural", "analytical"]
-
-    - name: "google/gemma-2-9b-it:free"
-      specialty: "general"
-      capabilities: [
-        "code_generation",
-        "technical_documentation",
-        "reasoning"
-      ]
-      prompt_types: ["technical", "analytical", "coding", "scientific"]
-
-    - name: "nvidia/llama-3.1-nemotron-70b-instruct:free"
-      specialty: "general"
-      capabilities: [
-        "instruction_optimized",
-        "efficient_processing",
-        "multilingual_support",
-        "advanced_reasoning"
-      ]
-      prompt_types: ["general", "scientific", "historical", "philosophical", "cultural", "analytical"]
-
-    - name: "mistralai/mistral-small-24b-instruct-2501:free"
-      specialty: "general"
-      capabilities: [
-        "instruction_optimized",
-        "multilingual_support",
-        "reasoning"
-      ]
-      prompt_types: ["general", "scientific", "historical", "philosophical", "cultural", "analytical"]
-
     - name: "meta-llama/llama-3.3-70b-instruct:free"
       specialty: "general"
       capabilities: [
@@ -112,15 +45,6 @@ openrouter:
         "knowledge_distillation"
       ]
       prompt_types: ["general", "scientific", "historical", "philosophical", "analytical", "coding"]
-
-    - name: "microsoft/phi-4:free"
-      specialty: "general"
-      capabilities: [
-        "advanced_reasoning",
-        "math_solving",
-        "code_generation"
-      ]
-      prompt_types: ["general", "scientific", "analytical", "coding", "math"]
 
   temperature: 0.7
 

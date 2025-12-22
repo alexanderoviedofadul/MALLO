@@ -690,9 +690,9 @@ class AgentManager:
         )
         if client:
             try:
-                # Probar el cliente con un modelo gratuito de DeepSeek
+                # Probar el cliente con un modelo gratuito verificado
                 client.chat.completions.create(
-                    model="deepseek/deepseek-r1-0528:free",
+                    model="meta-llama/llama-3.3-70b-instruct:free",
                     messages=[{"role": "user", "content": "Test"}],
                     max_tokens=20,  # Mínimo 16 requerido por algunos backends (Azure)
                 )
@@ -1192,7 +1192,7 @@ class AgentManager:
 
                 # Si no se encuentra, usar un modelo por defecto seguro
                 if not found:
-                    model = "deepseek/deepseek-r1-0528:free"
+                    model = "meta-llama/llama-3.3-70b-instruct:free"
                     logging.warning(
                         f"Modelo no encontrado en la configuración, usando modelo por defecto: {model}"
                     )

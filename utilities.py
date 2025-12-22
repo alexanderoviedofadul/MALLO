@@ -187,7 +187,7 @@ from together import Together
 client = Together(api_key=os.environ.get('TOGETHER_API_KEY'))
 
 response = client.chat.completions.create(
-    model="meta-llama/Llama-Vision-Free",
+    model="z-ai/glm-4.5-air:free",
     messages=[{"role": "user", "content": "What are some fun things to do in New York?"}],
 )
 print(response.choices[0].message.content)
@@ -481,7 +481,7 @@ def check_openrouter_api() -> bool:
                 "Content-Type": "application/json",
             },
             json={
-                "model": "deepseek/deepseek-r1-0528:free",  # Usar modelo gratuito de DeepSeek
+                "model": "meta-llama/llama-3.3-70b-instruct:free",  # Usar modelo gratuito verificado
                 "messages": [{"role": "user", "content": "Test"}],
                 "max_tokens": 20,  # Mínimo 16 requerido por algunos backends
             },
