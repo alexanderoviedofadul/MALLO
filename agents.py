@@ -109,7 +109,7 @@ class AgentManager:
         self.specialized_assistants = config.get("specialized_assistants", [])
         self.moa_threshold = config.get("thresholds", {}).get("moa_complexity", 0.7)
         self.agent_speeds = {}
-        self.available_models = self.verify_models()
+        self.available_models = {}  # Se inicializará después de los clientes
         self.reliable_models = []
         self.default_local_model = config["ollama"].get(
             "default_model", "phi3.5:latest"
@@ -178,6 +178,9 @@ class AgentManager:
         routellm_client = self.init_routellm_client()
         if routellm_client:
             self.clients["routellm"] = routellm_client
+
+        # Verificar modelos disponibles después de inicializar todos los clientes
+        self.available_models = self.verify_models()
 
     def get_specialized_assistant(self, assistant_id: str) -> Optional[Dict[str, Any]]:
         """
@@ -337,7 +340,7 @@ class AgentManager:
 
         if best_agent:
             return {
-                "type": "specialized",
+                "type": "assistant",  # Usar "assistant" para procesar con OpenAI Assistants API
                 "id": best_agent["id"],
                 "name": best_agent["name"],
             }
@@ -1218,11 +1221,27 @@ class AgentManager:
 
             # Llamar a la API con el cliente temporal
             response = openrouter_client.chat.completions.create(**params)
-            if not response.choices or not response.choices[0].message.content:
-                 logging.warning(f"OpenRouter response empty or invalid: {response}")
-                 return "Error: Respuesta vacía de OpenRouter"
-            
-            return response.choices[0].message.content
+
+            if not response.choices:
+                logging.warning(f"OpenRouter response has no choices: {response}")
+                return "Error: Respuesta sin opciones de OpenRouter"
+
+            message = response.choices[0].message
+            content = message.content
+
+            # Modelos de razonamiento (DeepSeek R1, o1, etc.) pueden retornar contenido vacío
+            # pero con el razonamiento en un campo separado
+            if not content or content.strip() == "":
+                # Intentar extraer del campo reasoning si existe
+                reasoning = getattr(message, 'reasoning', None)
+                if reasoning:
+                    logging.info(f"OpenRouter: Usando campo reasoning como contenido")
+                    content = reasoning
+                else:
+                    logging.warning(f"OpenRouter response empty: {response}")
+                    return "Error: Respuesta vacía de OpenRouter"
+
+            return content
 
         except Exception as e:
             logging.error(f"Error al procesar con OpenRouter API: {str(e)}")
