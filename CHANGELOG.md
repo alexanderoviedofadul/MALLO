@@ -4,6 +4,25 @@ Todos los cambios notables en el proyecto MALLO serán documentados en este arch
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/),
 y este proyecto se adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 
+## [Unreleased] - 2026-08-09
+
+### Corregido
+- **El auto-deploy se rompió con el rename de la cuenta de GitHub, y no avisó.** El operador
+  renombró su cuenta de `bladealex9848` a `alexanderoviedofadul`; el webhook validaba
+  `repository.full_name !== 'bladealex9848/MALLO'`, así que a partir del rename **descartó
+  todos los push**. El servicio seguía `active`, el sitio respondía 200 y el endpoint devolvía
+  **200 OK** a GitHub: lo único que quedaba era un `WARN  Webhook de repositorio no
+  reconocido` en su log.
+- De los 57 webhooks del VPS, éste fue **el único** con esa validación por literal, y el único
+  roto directamente por el rename. Corregido el literal + reinicio del servicio; verificado con
+  un ping real (200 OK) y `mallollm.alexanderoviedofadul.dev` → 200. El script vive en el repo
+  de configuraciones del VPS, no en éste.
+- **Regla**: un webhook no debe validar `repository.full_name` contra un literal `owner/repo`
+  — se rompe con cualquier renombrado y **sin fallar**. Comparar contra `repository.name` (que
+  no cambia al renombrar el owner) o leer el valor de una variable de entorno. La firma HMAC ya
+  garantiza el origen; validar además el nombre aporta poco y añade este punto de rotura.
+- Doc: [`docs/FIX-WEBHOOK-RENAME-OWNER-2026-08-09.md`](docs/FIX-WEBHOOK-RENAME-OWNER-2026-08-09.md)
+
 ## [2.8.4] - 2025-12-21
 
 ### Corregido

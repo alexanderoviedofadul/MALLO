@@ -28,6 +28,12 @@
 
 ## Descripción
 
+> **Nota de despliegue (2026-08-09)**: el auto-deploy estuvo descartando todos los push desde
+> que la cuenta de GitHub pasó de `bladealex9848` a `alexanderoviedofadul` — el webhook validaba
+> `repository.full_name` contra ese literal. No dio ninguna señal: servicio `active`, sitio 200
+> y respuesta 200 a GitHub. Corregido y verificado. Detalle y regla en
+> [`docs/FIX-WEBHOOK-RENAME-OWNER-2026-08-09.md`](docs/FIX-WEBHOOK-RENAME-OWNER-2026-08-09.md).
+
 MALLO (MultiAgent LLM Orchestrator) es una plataforma avanzada de orquestación de modelos de lenguaje que implementa una arquitectura distribuida basada en agentes. Diseñada específicamente para el procesamiento de consultas complejas, MALLO utiliza un sistema de selección dinámica de agentes que combina:
 
 - Modelos de lenguaje locales para procesamiento de baja latencia
