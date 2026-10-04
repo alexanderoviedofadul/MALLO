@@ -150,15 +150,21 @@ except Exception as e:
 
 def initialize_system(config: Dict[str, Any]) -> Dict[str, bool]:
     """Inicializa y verifica los componentes del sistema."""
+    # Proveedores activos primero; los desactivados (key comentada en secrets)
+    # y los demás componentes después.
     status = {
-        "OpenAI API": check_openai_api(),
-        "Groq API": check_groq_api(),
-        "Local Models": check_local_models(config),
-        "Web Search": check_web_search(),
-        "DeepInfra API": check_deepinfra_api(),
-        "Anthropic API": check_anthropic_api(),
+        # ── Activos ──
         "DeepSeek API": check_deepseek_api(),
         "Mistral API": check_mistral_api(),
+        "Ollama Cloud API": check_ollama_cloud_api(),
+        "MiniMax API (cedula360)": check_minimax_api(),
+        "Local Models": check_local_models(config),
+        "Web Search": check_web_search(),
+        # ── Resto / desactivados ──
+        "OpenAI API": check_openai_api(),
+        "Groq API": check_groq_api(),
+        "DeepInfra API": check_deepinfra_api(),
+        "Anthropic API": check_anthropic_api(),
         "Cohere API": check_cohere_api(),
         "OpenRouter API": check_openrouter_api(),
         "Together API": check_together_api(),
@@ -245,11 +251,17 @@ def check_local_models(config: Dict[str, Any]) -> bool:
 
 
 def perform_web_search(query: str, max_retries: int = 3) -> str:
-    search_methods = ["you", "tavily", "duckduckgo"]
+    # Ollama Cloud web search es el método principal; MiniMax (cedula360) es el
+    # primer respaldo, seguido de YOU/Tavily/DuckDuckGo.
+    search_methods = ["ollama", "minimax", "you", "tavily", "duckduckgo"]
 
     for method in search_methods:
         result = None
-        if method == "you":
+        if method == "ollama":
+            result = ollama_search(query)
+        elif method == "minimax":
+            result = minimax_search(query)
+        elif method == "you":
             result = you_search(query)
         elif method == "tavily":
             result = tavily_search(query)
@@ -260,6 +272,70 @@ def perform_web_search(query: str, max_retries: int = 3) -> str:
             return result
 
     return "No se pudo completar la búsqueda web después de varios intentos."
+
+
+def minimax_search(query: str) -> str:
+    """Búsqueda web vía la API MiniMax de cedula360 (POST /api/minimax/search)."""
+    try:
+        api_key = get_secret("CEDULA360_API_KEY")
+        if not api_key:
+            return None
+        base = (get_secret("CEDULA360_API_BASE") or "https://cedula360.tech/api").rstrip("/")
+        r = requests.post(
+            f"{base}/minimax/search",
+            headers={"X-API-Key": api_key, "Content-Type": "application/json"},
+            json={"query": query},
+            timeout=60,
+        )
+        if r.status_code != 200:
+            return None
+        raw = (r.json().get("stdout") or "").strip()
+        if not raw:
+            return None
+        try:
+            parsed = json.loads(raw)
+        except Exception:
+            return raw  # respuesta en texto plano
+        organic = parsed.get("organic") or []
+        snippets = []
+        for item in organic[:5]:
+            sn = (item.get("snippet") or "").strip()
+            ti = (item.get("title") or "").strip()
+            if sn:
+                snippets.append(f"{ti}: {sn}" if ti else sn)
+        if snippets:
+            logging.info("Web search vía MiniMax (cedula360 /api/minimax/search)")
+            return "\n".join(snippets)
+        return None
+    except Exception as e:
+        logging.error(f"Error in MiniMax search: {str(e)}")
+        return None
+
+
+def ollama_search(query: str) -> str:
+    """Búsqueda web vía la API de Ollama Cloud (POST /api/web_search)."""
+    try:
+        api_key = get_secret("OLLAMA_CLOUD_API_KEY")
+        if not api_key:
+            return None
+        from tools.ollama_web import web_search
+
+        results = web_search(query, api_key, max_results=5)
+        if not results:
+            return None
+        snippets = []
+        for r in results[:5]:
+            content = (r.get("content") or "").strip()
+            if content:
+                title = (r.get("title") or "").strip()
+                snippets.append(f"{title}: {content}" if title else content)
+        if snippets:
+            logging.info("Web search vía Ollama Cloud (api.ollama.com/web_search)")
+            return "\n".join(snippets)
+        return None
+    except Exception as e:
+        logging.error(f"Error in Ollama web search: {str(e)}")
+        return None
 
 
 def you_search(query: str) -> str:
@@ -431,6 +507,34 @@ def check_routellm_api() -> bool:
         return True
     except Exception as e:
         logging.error(f"Error checking RouteLLM API: {str(e)}")
+        return False
+
+
+def check_ollama_cloud_api() -> bool:
+    try:
+        client = OpenAI(
+            api_key=secrets["OLLAMA_CLOUD_API_KEY"],
+            base_url="https://ollama.com/v1",
+        )
+        client.models.list()
+        return True
+    except Exception as e:
+        logging.error(f"Error checking Ollama Cloud API: {str(e)}")
+        return False
+
+
+def check_minimax_api() -> bool:
+    # MiniMax multimodal vía cedula360. Disponible si /api/minimax/usage responde
+    # 200 (plan Enterprise/Despachos); 403 si el plan no tiene acceso.
+    try:
+        api_key = get_secret("CEDULA360_API_KEY")
+        if not api_key:
+            return False
+        base = (get_secret("CEDULA360_API_BASE") or "https://cedula360.tech/api").rstrip("/")
+        r = requests.get(f"{base}/minimax/usage", headers={"X-API-Key": api_key}, timeout=15)
+        return r.status_code == 200
+    except Exception as e:
+        logging.error(f"Error checking MiniMax API: {str(e)}")
         return False
 
 

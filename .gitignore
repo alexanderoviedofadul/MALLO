@@ -118,3 +118,6 @@ cython_debug/
 
 # Temporary directory
 temp/
+# Copias de config.yaml que generan el sincronizador y el benchmark mensuales
+# (desde 2026-10-04 se escriben en /root/backups/MALLO/config-bak/, fuera del árbol)
+config.yaml.bak.*

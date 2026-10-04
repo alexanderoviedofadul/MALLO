@@ -1,51 +1,74 @@
 # Configuración de OpenRouter
 openrouter:
-  fast_models: "openai/gpt-oss-20b:free"
-  default_model: "meta-llama/llama-3.3-70b-instruct:free"
+  # Modelos :free verificados funcionando (2026-06-23). El tier free de
+  # OpenRouter rota disponibilidad; ver tools/validate_and_sync_models.py.
+  fast_models: "nvidia/nemotron-3-nano-30b-a3b:free"
+  default_model: "google/gemma-4-31b-it:free"
   models:
-    - name: "nvidia/nemotron-nano-9b-v2:free"
-      specialty: "multimodal"
-      capabilities: [
-        "vision_understanding",
-        "advanced_reasoning",
-        "multi_task",
-        "multilingual_support",
-        "moe_architecture",
-        "large_context",
-        "code_generation",
-        "image_reasoning"
-      ]
-      prompt_types: ["general", "scientific", "multimodal", "visual", "analytical", "coding"]
-
-    - name: "openai/gpt-oss-20b:free"
-      specialty: "general"
-      capabilities: [
-        "advanced_reasoning",
-        "multi_task",
-        "multilingual_support",
-        "large_scale"
-      ]
-      prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic", "analytical"]
-
-    - name: "z-ai/glm-4.5-air:free"
-      specialty: "multimodal"
-      capabilities: [
-        "vision_understanding",
-        "instruction_optimized",
-        "multilingual_support",
-        "chinese_language_proficiency"
-      ]
-      prompt_types: ["general", "scientific", "visual", "analytical", "cultural"]
-
-    - name: "meta-llama/llama-3.3-70b-instruct:free"
-      specialty: "general"
-      capabilities: [
-        "advanced_reasoning",
-        "large_scale",
-        "knowledge_distillation"
-      ]
-      prompt_types: ["general", "scientific", "historical", "philosophical", "analytical", "coding"]
-
+  - name: "google/gemma-4-31b-it:free"
+    specialty: "general"
+    capabilities: ["advanced_reasoning", "multilingual_support", "instruction_following"]
+    prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic", "analytical"]
+  - name: "nvidia/nemotron-3-ultra-550b-a55b:free"
+    specialty: "general"
+    capabilities: ["advanced_reasoning", "large_scale", "moe_architecture", "agentic"]
+    prompt_types: ["general", "scientific", "analytical", "philosophical", "coding"]
+  - name: "nvidia/nemotron-3-super-120b-a12b:free"
+    specialty: "general"
+    capabilities: ["advanced_reasoning", "moe_architecture", "multi_agent"]
+    prompt_types: ["general", "scientific", "analytical", "coding"]
+  - name: "nvidia/nemotron-3-nano-30b-a3b:free"
+    specialty: "general"
+    capabilities: ["efficient_inference", "agentic", "low_latency"]
+    prompt_types: ["general", "scientific", "analytical"]
+  - name: cohere/north-mini-code:free
+    specialty: coding
+    capabilities: [efficient_inference, code_generation, tool_use]
+    prompt_types: [coding, general]
+  - name: nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free
+    specialty: multimodal
+    capabilities: [efficient_inference, advanced_reasoning, vision_understanding, large_context]
+    prompt_types: [general, scientific, visual, multimodal]
+  - name: google/gemma-4-26b-a4b-it:free
+    specialty: general
+    capabilities: [advanced_reasoning, large_context, multilingual_support, thinking_mode]
+    prompt_types: [general, scientific, cultural, political]
+  - name: poolside/laguna-s-2.1:free
+    specialty: coding
+    capabilities: [code_generation, agentic, tool_use, thinking_mode]
+    prompt_types: [coding, analytical, math, scientific, general]
+  - name: poolside/laguna-xs-2.1:free
+    specialty: coding
+    capabilities: [code_generation, efficient_inference, agentic, tool_use]
+    prompt_types: [coding, analytical, math, scientific, general]
+  - name: dots-studio/dots-3-note-preview:free
+    specialty: multimodal
+    capabilities: [vision_understanding, large_context, efficient_inference]
+    prompt_types: [general, cultural, visual]
+  - name: liquid/lfm-2.5-2.6b:free
+    specialty: general
+    capabilities: [advanced_reasoning, large_context, multilingual_support]
+    prompt_types: [general, scientific, historical, cultural]
+  - name: nvidia/nemotron-3.5-lightning:free
+    specialty: general
+    capabilities: [efficient_inference, large_context, advanced_reasoning]
+    prompt_types: [general, scientific, analytical]
+  - name: thinkingmachines/inkling-small:free
+    specialty: coding
+    capabilities: [code_generation, efficient_inference, thinking_mode]
+    prompt_types: [coding, general, analytical]
+  - name: thinkingmachines/inkling:free
+    specialty: general
+    capabilities: [agentic, advanced_reasoning, large_context, thinking_mode]
+    prompt_types: [general, ethical, political, analytical]
+  - name: inclusionai/ling-3.0-flash-sante:free
+    specialty: general
+    capabilities: [advanced_reasoning, efficient_inference, multilingual_support]
+    prompt_types: [general, scientific, ethical]
+  - name: qwen/qwen3.8-27b:free
+    specialty: multimodal
+    capabilities: [vision_understanding, code_generation, large_context, agentic]
+    prompt_types: [coding, scientific, multimodal, visual, analytical]
   temperature: 0.7
 
 # Configuración de Groq
@@ -54,142 +77,709 @@ groq:
   default_model: "groq/compound"  # Modelo predeterminado de alta calidad
   models:
     # MODELOS DE PRODUCCIÓN 
-    - name: "groq/compound"
-      specialty: "general"
-      capabilities: ["instruction_following", "medium_size", "context_window_8k"]
-      prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic"]
-
-    - name: "groq/compound-mini"
-      specialty: "general"
-      capabilities: ["versatile_tasks", "advanced_reasoning", "large_context", "context_window_128k", "max_completion_32k"]
-      prompt_types: ["general", "legal", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic", "analytical"]
-
-    - name: "openai/gpt-oss-20b"
-      specialty: "general"
-      capabilities: ["instant_response", "low_latency", "context_window_128k", "max_completion_8k"]
-      prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic"]    
-
+  - name: "groq/compound"
+    specialty: "general"
+    capabilities: ["instruction_following", "medium_size", "context_window_8k"]
+    prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic"]
+  - name: "groq/compound-mini"
+    specialty: "general"
+    capabilities: ["versatile_tasks", "advanced_reasoning", "large_context", "context_window_128k", "max_completion_32k"]
+    prompt_types: ["general", "legal", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic", "analytical"]
+  - name: "openai/gpt-oss-120b"
+    specialty: "general"
+    capabilities: ["advanced_reasoning", "large_scale", "tool_use", "context_window_128k"]
+    prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic", "analytical", "coding"]
+  - name: "openai/gpt-oss-20b"
+    specialty: "general"
+    capabilities: ["instant_response", "low_latency", "context_window_128k", "max_completion_8k"]
+    prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic"]
+  - name: "llama-3.3-70b-versatile"
+    specialty: "general"
+    capabilities: ["advanced_reasoning", "large_scale", "instruction_following", "context_window_128k"]
+    prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic", "analytical", "coding"]
+  - name: "llama-3.1-8b-instant"
+    specialty: "general"
+    capabilities: ["instant_response", "low_latency", "efficient_inference"]
+    prompt_types: ["general", "scientific", "historical", "cultural", "political", "economic"]
+  - name: "meta-llama/llama-4-scout-17b-16e-instruct"
+    specialty: "multimodal"
+    capabilities: ["vision_understanding", "moe_architecture", "large_context", "advanced_reasoning"]
+    prompt_types: ["general", "multimodal", "visual", "scientific", "analytical", "coding"]
+  - name: "qwen/qwen3-32b"
+    specialty: "general"
+    capabilities: ["advanced_reasoning", "multilingual_support", "thinking_mode"]
+    prompt_types: ["general", "scientific", "analytical", "coding", "math"]
+  - name: "qwen/qwen3.6-27b"
+    specialty: "general"
+    capabilities: ["advanced_reasoning", "multilingual_support", "instruction_following"]
+    prompt_types: ["general", "scientific", "analytical", "coding"]
+  - name: allam-2-7b
+    specialty: general
+    capabilities: [advanced_reasoning, multilingual_support, efficient_inference]
+    prompt_types: [general, cultural, historical, scientific, political, economic, analytical, ethical, legal]
   max_tokens: 8000
   temperature: 0.7
 
 # Configuración de DeepInfra
 deepinfra:
-  fast_models: "deepseek-ai/DeepSeek-OCR"
-  default_model: "nvidia/Llama-3.3-Nemotron-Super-49B-v1.5"
+  # NOTA: requiere billing address en la cuenta DeepInfra (actualmente 402).
+  # Modelos vigentes verificados en su catálogo (2026-06-23).
+  fast_models: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
+  default_model: "meta-llama/Llama-3.3-70B-Instruct-Turbo"
   models:
-    - name: "nvidia/Llama-3.3-Nemotron-Super-49B-v1.5"
-      specialty: "general"
-      capabilities: ["advanced_reasoning", "large_scale"]
-      prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic"]    
-    - name: "deepseek-ai/DeepSeek-OCR"
-      specialty: "general"
-      capabilities: ["instruction_following", "fast_response"]
-      prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic"]    
-
-# Configuración de Together
+  - name: "meta-llama/Llama-3.3-70B-Instruct-Turbo"
+    specialty: "general"
+    capabilities: ["advanced_reasoning", "large_scale", "instruction_following"]
+    prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic", "analytical", "coding"]
+  - name: "deepseek-ai/DeepSeek-V3.2"
+    specialty: "general"
+    capabilities: ["advanced_reasoning", "large_context", "moe_architecture"]
+    prompt_types: ["general", "scientific", "analytical", "coding", "math"]
+  - name: "Qwen/Qwen3-Coder-480B-A35B-Instruct-Turbo"
+    specialty: "coding"
+    capabilities: ["code_generation", "agentic", "large_context", "tool_use"]
+    prompt_types: ["coding", "general", "analytical"]
+  - name: "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8"
+    specialty: "multimodal"
+    capabilities: ["vision_understanding", "moe_architecture", "large_context"]
+    prompt_types: ["general", "multimodal", "visual", "scientific", "analytical", "coding"]
+  - name: "nvidia/Llama-3.3-Nemotron-Super-49B-v1.5"
+    specialty: "general"
+    capabilities: ["advanced_reasoning", "large_scale"]
+    prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic"]
+  - name: "microsoft/phi-4"
+    specialty: "general"
+    capabilities: ["advanced_reasoning", "efficient_inference", "math"]
+    prompt_types: ["general", "scientific", "analytical", "math"]
+  - name: XiaomiMiMo/MiMo-V2.5-Pro
+    specialty: general
+    capabilities: [advanced_reasoning, agentic, large_context, thinking_mode]
+    prompt_types: [general, philosophical, ethical, analytical]
+  - name: Qwen/Qwen3-14B
+    specialty: general
+    capabilities: [advanced_reasoning, multilingual_support, large_context]
+    prompt_types: [general, scientific, analytical, coding, math]
+  - name: anthropic/claude-opus-4-8
+    specialty: general
+    capabilities: [advanced_reasoning, agentic, multilingual_support, large_context]
+    prompt_types: [general, philosophical, ethical, cultural, scientific]
+  - name: Qwen/Qwen3.5-397B-A17B
+    specialty: general
+    capabilities: [advanced_reasoning, large_context, multilingual_support, agentic]
+    prompt_types: [general, scientific, analytical, coding, math]
+  - name: Gryphe/MythoMax-L2-13b
+    specialty: general
+    capabilities: [advanced_reasoning, multilingual_support, large_context]
+    prompt_types: [cultural, historical, general]
+  - name: deepseek-ai/DeepSeek-V4-Pro
+    specialty: general
+    capabilities: [code_generation, advanced_reasoning, multilingual_support, large_context]
+    prompt_types: [coding, general, scientific, analytical, math]
+  - name: zai-org/GLM-5
+    specialty: general
+    capabilities: [multilingual_support, efficient_inference, advanced_reasoning]
+    prompt_types: [general, cultural, political, economic]
+  - name: MiniMaxAI/MiniMax-M2.7
+    specialty: general
+    capabilities: [efficient_inference, advanced_reasoning, multilingual_support]
+    prompt_types: [general, coding, analytical]
+  - name: zai-org/GLM-5.2
+    specialty: general
+    capabilities: [multilingual_support, advanced_reasoning, large_context, efficient_inference]
+    prompt_types: [general, scientific, cultural, political]
+  - name: google/gemma-3-27b-it
+    specialty: general
+    capabilities: [advanced_reasoning, multilingual_support, large_context, efficient_inference]
+    prompt_types: [general, scientific, coding, analytical, ethical]
+  - name: zai-org/GLM-4.7-Flash
+    specialty: general
+    capabilities: [efficient_inference, multilingual_support, advanced_reasoning]
+    prompt_types: [general, cultural, economic, political]
+  - name: NousResearch/Hermes-3-Llama-3.1-405B
+    specialty: general
+    capabilities: [advanced_reasoning, large_context, multilingual_support, agentic]
+    prompt_types: [general, scientific, philosophical, ethical, analytical]
+  - name: meta-llama/Llama-3.2-11B-Vision-Instruct
+    specialty: multimodal
+    capabilities: [vision_understanding, multilingual_support, advanced_reasoning, large_context]
+    prompt_types: [general, visual, multimodal]
+  - name: XiaomiMiMo/MiMo-V2.5
+    specialty: general
+    capabilities: [agentic, advanced_reasoning, large_context, multilingual_support]
+    prompt_types: [general, analytical, ethical]
+  - name: google/gemini-3.1-flash-lite
+    specialty: general
+    capabilities: [advanced_reasoning, multilingual_support, efficient_inference]
+    prompt_types: [general, scientific, cultural]
+  - name: meta-llama/Meta-Llama-3.1-8B-Instruct
+    specialty: general
+    capabilities: [advanced_reasoning, multilingual_support, large_context]
+    prompt_types: [general, scientific, historical, cultural]
+  - name: Qwen/Qwen3-Max-Thinking
+    specialty: general
+    capabilities: [advanced_reasoning, thinking_mode, tool_use, multilingual_support]
+    prompt_types: [general, analytical, philosophical, ethical]
+  - name: deepseek-ai/DeepSeek-V3.1
+    specialty: general
+    capabilities: [advanced_reasoning, multilingual_support, large_context]
+    prompt_types: [general, scientific, math]
+  - name: Qwen/Qwen3-235B-A22B-Instruct-2507
+    specialty: general
+    capabilities: [advanced_reasoning, large_context, multilingual_support]
+    prompt_types: [general, scientific, historical, political]
+  - name: moonshotai/Kimi-K2.6
+    specialty: general
+    capabilities: [advanced_reasoning, multilingual_support, tool_use]
+    prompt_types: [general, cultural, ethical, political]
+  - name: nvidia/Nemotron-3-Nano-30B-A3B
+    specialty: general
+    capabilities: [efficient_inference, multilingual_support, advanced_reasoning]
+    prompt_types: [general, scientific, analytical]
+  - name: stepfun-ai/Step-3.7-Flash
+    specialty: general
+    capabilities: [efficient_inference, advanced_reasoning, large_context]
+    prompt_types: [general, scientific, analytical]
+  - name: deepseek-ai/DeepSeek-V4-Flash
+    specialty: general
+    capabilities: [efficient_inference, advanced_reasoning, multilingual_support, large_context]
+    prompt_types: [general, scientific, analytical]
+  - name: Qwen/Qwen3-Max
+    specialty: general
+    capabilities: [advanced_reasoning, large_context, multilingual_support, tool_use]
+    prompt_types: [general, analytical, political, economic]
+  - name: google/gemini-1.5-flash
+    specialty: multimodal
+    capabilities: [vision_understanding, multilingual_support, efficient_inference, advanced_reasoning]
+    prompt_types: [general, visual, multimodal]
+  - name: MiniMaxAI/MiniMax-M2.7-Turbo
+    specialty: general
+    capabilities: [efficient_inference, large_context, advanced_reasoning, multilingual_support]
+    prompt_types: [general, analytical, coding]
+  - name: Sao10K/L3.1-70B-Euryale-v2.2
+    specialty: general
+    capabilities: [advanced_reasoning, multilingual_support, large_context, agentic]
+    prompt_types: [general, scientific, philosophical, analytical]
+  - name: MiniMaxAI/MiniMax-M2.5
+    specialty: general
+    capabilities: [efficient_inference, large_context, multilingual_support, advanced_reasoning]
+    prompt_types: [general, analytical, cultural]
+  - name: anthropic/claude-opus-4-7
+    specialty: general
+    capabilities: [advanced_reasoning, multilingual_support, thinking_mode, agentic]
+    prompt_types: [general, ethical, philosophical, analytical]
+  - name: ByteDance/Seed-2.0-pro
+    specialty: general
+    capabilities: [advanced_reasoning, multilingual_support, efficient_inference]
+    prompt_types: [general, cultural, economic]
+  - name: Sao10K/L3-8B-Lunaris-v1-Turbo
+    specialty: general
+    capabilities: [efficient_inference, advanced_reasoning, multilingual_support]
+    prompt_types: [general, coding, analytical]
+  - name: google/gemma-4-31B-it-turbo
+    specialty: general
+    capabilities: [advanced_reasoning, multilingual_support, efficient_inference, large_context]
+    prompt_types: [general, scientific, analytical]
+  - name: Qwen/Qwen3-VL-235B-A22B-Instruct
+    specialty: multimodal
+    capabilities: [vision_understanding, multilingual_support, advanced_reasoning, large_context]
+    prompt_types: [general, visual, multimodal, scientific]
+  - name: mistralai/Mistral-Nemo-Instruct-2407
+    specialty: coding
+    capabilities: [code_generation, advanced_reasoning, efficient_inference, tool_use]
+    prompt_types: [coding, analytical, general, math]
 together:
-  fast_models: "meta-llama/Llama-3.2-3B-Instruct-Turbo"
-  default_model: "Qwen/Qwen2.5-72B-Instruct-Turbo"
+  fast_models: "Qwen/Qwen2.5-7B-Instruct-Turbo"
+  default_model: "meta-llama/Llama-3.3-70B-Instruct-Turbo"
   models:
-    - name: "Qwen/Qwen2.5-72B-Instruct-Turbo"
-      specialty: "general"
-      capabilities: ["fast_inference", "broad_knowledge", "advanced_reasoning"]
-      prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic", "coding"]
-    - name: "meta-llama/Llama-3.2-3B-Instruct-Turbo"
-      specialty: "general"
-      capabilities: ["instruction_following", "fast_inference", "efficient_processing"]
-      prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic"]    
+  - name: "meta-llama/Llama-3.3-70B-Instruct-Turbo"
+    specialty: "general"
+    capabilities: ["fast_inference", "broad_knowledge", "advanced_reasoning"]
+    prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic", "coding"]
+  - name: "Qwen/Qwen2.5-7B-Instruct-Turbo"
+    specialty: "general"
+    capabilities: ["instruction_following", "fast_inference", "efficient_processing"]
+    prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic"]
   max_tokens: 512
   temperature: 0.7
 
 # Configuración de Anthropic
 anthropic:
-  fast_models: "claude-3-haiku-20240307"
-  default_model: "claude-3-haiku-20240307"
+  # NOTA: requiere saldo en la cuenta Anthropic (actualmente 400 low balance).
+  # claude-3-haiku-20240307 fue descontinuado; modelos vigentes (2026-06-23).
+  fast_models: "claude-haiku-4-5-20251001"
+  default_model: "claude-haiku-4-5-20251001"
   models:
-    - name: "claude-3-haiku-20240307"
-      specialty: "general"
-      capabilities: ["fast_response", "concise_output"]
-      prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic"]
-
-# Configuration de OpenAI
+  - name: "claude-haiku-4-5-20251001"
+    specialty: "general"
+    capabilities: ["fast_response", "advanced_reasoning", "concise_output", "tool_use"]
+    prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic", "analytical", "coding"]
+  - name: "claude-sonnet-4-6"
+    specialty: "general"
+    capabilities: ["advanced_reasoning", "large_context", "coding", "tool_use", "agentic"]
+    prompt_types: ["general", "scientific", "analytical", "philosophical", "coding", "legal"]
+  - name: "claude-opus-4-8"
+    specialty: "general"
+    capabilities: ["advanced_reasoning", "large_scale", "coding", "agentic", "long_horizon_tasks"]
+    prompt_types: ["general", "scientific", "analytical", "philosophical", "coding", "legal", "math"]
+  - name: claude-fable-5
+    specialty: general
+    capabilities: [advanced_reasoning, multilingual_support, large_context, thinking_mode]
+    prompt_types: [general, philosophical, ethical, cultural, historical, political, economic, analytical]
+  - name: claude-opus-4-7
+    specialty: coding
+    capabilities: [code_generation, advanced_reasoning, agentic, tool_use, large_context]
+    prompt_types: [coding, analytical, math, scientific, general]
+  - name: claude-opus-4-6
+    specialty: coding
+    capabilities: [code_generation, advanced_reasoning, agentic, large_context, tool_use]
+    prompt_types: [coding, analytical, math, scientific, general]
+  - name: claude-opus-4-5-20251101
+    specialty: coding
+    capabilities: [code_generation, advanced_reasoning, large_context, tool_use]
+    prompt_types: [coding, analytical, math, scientific, general]
+  - name: claude-sonnet-4-5-20250929
+    specialty: general
+    capabilities: [advanced_reasoning, multilingual_support, efficient_inference, thinking_mode]
+    prompt_types: [general, historical, cultural, ethical, political, economic, analytical]
+  - name: claude-opus-4-1-20250805
+    specialty: coding
+    capabilities: [code_generation, advanced_reasoning, agentic, large_context]
+    prompt_types: [coding, analytical, math, scientific, general]
 openai:
   default_model: "gpt-5-nano"
   models:
-    - name: "gpt-5-nano"
-      specialty: "general"
-      capabilities: ["fast_inference", "broad_knowledge", "multimodal_understanding", "400k_context"]
-      prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic", "multimodal"]
-  master_model: "gpt-5-nano"
+  - name: "gpt-5-nano"
+    specialty: "general"
+    capabilities: ["fast_inference", "broad_knowledge", "multimodal_understanding", "400k_context"]
+    prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic", "multimodal"]
+  - name: "gpt-5-mini"
+    specialty: "general"
+    capabilities: ["advanced_reasoning", "broad_knowledge", "multimodal_understanding", "400k_context", "tool_use"]
+    prompt_types: ["general", "scientific", "analytical", "philosophical", "coding", "math", "multimodal"]
+  - name: "gpt-5.4-mini"
+    specialty: "general"
+    capabilities: ["advanced_reasoning", "broad_knowledge", "tool_use", "multimodal_understanding"]
+    prompt_types: ["general", "scientific", "analytical", "philosophical", "coding", "math", "multimodal"]
+  - name: "gpt-5.4-nano"
+    specialty: "general"
+    capabilities: ["fast_inference", "low_latency", "efficient_inference"]
+    prompt_types: ["general", "scientific", "cultural", "economic"]
+  - name: "gpt-5.1-codex-mini"
+    specialty: "coding"
+    capabilities: ["code_generation", "agentic", "tool_use"]
+    prompt_types: ["coding", "general", "analytical"]
+  - name: "gpt-4.1-mini"
+    specialty: "general"
+    capabilities: ["instruction_following", "broad_knowledge", "multimodal_understanding"]
+    prompt_types: ["general", "scientific", "analytical", "cultural", "coding"]
+  - name: "gpt-4o-mini"
+    specialty: "general"
+    capabilities: ["fast_inference", "multimodal_understanding", "low_latency"]
+    prompt_types: ["general", "scientific", "cultural", "multimodal"]
+  - name: gpt-4o-mini-search-preview
+    specialty: multimodal
+    capabilities: [vision_understanding, advanced_reasoning, multilingual_support, efficient_inference]
+    prompt_types: [general, visual, multimodal]
+  - name: gpt-4.1-nano
+    specialty: general
+    capabilities: [efficient_inference, advanced_reasoning, multilingual_support]
+    prompt_types: [general, scientific, coding]
+  - name: gpt-5-nano-2025-08-07
+    specialty: general
+    capabilities: [advanced_reasoning, efficient_inference, multilingual_support, large_context]
+    prompt_types: [general, scientific, analytical]
+  master_model: "gpt-5-mini"
 
 # Configuración de DeepSeek
 deepseek:
-  fast_models: "deepseek-chat"
-  default_model: "deepseek-chat"
+  # Catálogo oficial vigente (api-docs.deepseek.com, 2026-06): v4-flash y v4-pro,
+  # ambos 1M de contexto, thinking + non-thinking, JSON, tool calls, caché.
+  #   deepseek-v4-flash: in $0.14 / out $0.28 por 1M tokens (rápido/económico)
+  #   deepseek-v4-pro:   in $0.435 / out $0.87 por 1M tokens (máxima calidad)
+  # deepseek-chat / deepseek-reasoner se DEPRECAN el 2026-07-24 (alias de v4-flash
+  # en modo non-thinking / thinking); se conservan como fallback hasta entonces.
+  fast_models: "deepseek-v4-flash"
+  default_model: "deepseek-v4-flash"
   models:
-    - name: "deepseek-chat"
-      specialty: "general"
-      capabilities: ["conversational", "broad_knowledge"]
-      prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic"]    
-    - name: "deepseek-reasoner"
-      specialty: "general"
-      capabilities: ["advanced_reasoning", "large_context"]
-      prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic"]
-
-# Configuración de Z.AI (proveedor de GLM)
+  - name: "deepseek-v4-flash"
+    specialty: "general"
+    capabilities: ["efficient_inference", "advanced_reasoning", "thinking_mode", "large_context_1m", "tool_use", "json_mode"]
+    prompt_types: ["general", "scientific", "analytical", "coding", "math"]
+  - name: "deepseek-v4-pro"
+    specialty: "general"
+    capabilities: ["advanced_reasoning", "moe_architecture", "multi_mode_reasoning", "large_context_1m", "tool_use", "json_mode"]
+    prompt_types: ["general", "scientific", "analytical", "philosophical", "coding", "math", "legal"]
 z-ai:
-  fast_models: "glm-4.6"
+  fast_models: "glm-4.5-air"
   default_model: "glm-4.6"
   models:
-    - name: "glm-4.6"
-      specialty: "general"
-      capabilities: ["advanced_reasoning", "multimodal", "multilingual_support", "chinese_language_proficiency"]
-      prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "analytical"]
-
-# Configuración de RouteLLM
+  - name: "glm-4.6"
+    specialty: "general"
+    capabilities: ["advanced_reasoning", "multimodal", "multilingual_support", "chinese_language_proficiency"]
+    prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "analytical"]
+  - name: "glm-5.2"
+    specialty: "general"
+    capabilities: ["advanced_reasoning", "long_horizon_tasks", "tool_use", "thinking_mode", "agentic"]
+    prompt_types: ["general", "scientific", "analytical", "philosophical", "coding"]
+  - name: "glm-5.1"
+    specialty: "coding"
+    capabilities: ["code_generation", "agentic", "advanced_reasoning"]
+    prompt_types: ["coding", "general", "scientific", "analytical"]
+  - name: "glm-5"
+    specialty: "general"
+    capabilities: ["systems_engineering", "long_horizon_tasks", "advanced_reasoning", "large_scale"]
+    prompt_types: ["general", "scientific", "analytical", "coding", "philosophical"]
+  - name: "glm-4.7"
+    specialty: "coding"
+    capabilities: ["code_generation", "agentic", "advanced_reasoning"]
+    prompt_types: ["coding", "general", "analytical"]
+  - name: "glm-4.5-air"
+    specialty: "general"
+    capabilities: ["efficient_inference", "instruction_optimized", "multilingual_support"]
+    prompt_types: ["general", "scientific", "cultural", "analytical"]
+  - name: glm-4.5
+    specialty: general
+    capabilities: [advanced_reasoning, code_generation, agentic, large_context]
+    prompt_types: [general, coding, scientific, analytical]
+  - name: glm-5-turbo
+    specialty: coding
+    capabilities: [code_generation, efficient_inference, large_context]
+    prompt_types: [coding, general, analytical]
 routellm:
   fast_models: "route-llm"
   default_model: "route-llm"
   models:
-    - name: "route-llm"
-      specialty: "general"
-      capabilities: ["intelligent_routing", "cost_optimization", "performance_balancing"]
-      prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "analytical"]
+  - name: "route-llm"
+    specialty: "general"
+    capabilities: ["intelligent_routing", "cost_optimization", "performance_balancing"]
+    prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "analytical"]
 
 
   # Configuración de Mistral
 mistral:
-  fast_models: "mistral-small-latest"
+  fast_models: "ministral-8b-latest"
   default_model: "mistral-small-latest"
   models:
-    - name: "mistral-small-latest"
-      specialty: "general"
-      capabilities: ["fast_inference", "instruction_following", "advanced_reasoning", "large_scale"]
-      prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic", "analytical"]
-    - name: "codestral-latest"
-      specialty: "coding"
-      capabilities: ["code_generation", "code_analysis"]
-      prompt_types: ["coding"]
-
-# Configuración de Cohere
+  - name: "mistral-small-latest"
+    specialty: "general"
+    capabilities: ["fast_inference", "instruction_following", "advanced_reasoning", "large_scale"]
+    prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic", "analytical"]
+  - name: "mistral-large-latest"
+    specialty: "general"
+    capabilities: ["advanced_reasoning", "large_scale", "multilingual_support", "large_context"]
+    prompt_types: ["general", "scientific", "analytical", "philosophical", "coding", "legal"]
+  - name: "mistral-medium-latest"
+    specialty: "general"
+    capabilities: ["advanced_reasoning", "instruction_following", "multilingual_support"]
+    prompt_types: ["general", "scientific", "analytical", "coding"]
+  - name: "codestral-latest"
+    specialty: "coding"
+    capabilities: ["code_generation", "code_analysis", "fill_in_the_middle"]
+    prompt_types: ["coding"]
+  - name: "ministral-8b-latest"
+    specialty: "general"
+    capabilities: ["efficient_inference", "low_latency", "instruction_following"]
+    prompt_types: ["general", "scientific", "cultural"]
+  - name: codestral-2508
+    specialty: coding
+    capabilities: [code_generation, advanced_reasoning, tool_use]
+    prompt_types: [coding, analytical, math, general]
+  - name: mistral-code-latest
+    specialty: coding
+    capabilities: [code_generation, advanced_reasoning, tool_use]
+    prompt_types: [coding, analytical, math, general]
+  - name: mistral-small-2603
+    specialty: general
+    capabilities: [efficient_inference, multilingual_support, thinking_mode]
+    prompt_types: [general, scientific, analytical, historical, cultural]
+  - name: magistral-small-latest
+    specialty: general
+    capabilities: [efficient_inference, multilingual_support]
+    prompt_types: [general, scientific, historical, cultural, legal]
+  - name: mistral-large-2512
+    specialty: general
+    capabilities: [advanced_reasoning, large_context, multilingual_support, thinking_mode]
+    prompt_types: [general, scientific, historical, philosophical, ethical, political, economic, analytical, legal]
+  - name: mistral-large-2512
+    specialty: general
+    capabilities: [advanced_reasoning, large_context, multilingual_support, thinking_mode]
+    prompt_types: [general, scientific, historical, philosophical, ethical, political, economic, analytical, legal]
+  - name: ministral-3b-2512
+    specialty: general
+    capabilities: [efficient_inference, multilingual_support, advanced_reasoning]
+    prompt_types: [general, scientific, historical, cultural, legal]
+  - name: ministral-3b-latest
+    specialty: general
+    capabilities: [efficient_inference, multilingual_support, advanced_reasoning]
+    prompt_types: [general, scientific, historical, cultural, legal]
+  - name: ministral-8b-2512
+    specialty: general
+    capabilities: [advanced_reasoning, large_context, multilingual_support]
+    prompt_types: [general, scientific, analytical, math, legal]
+  - name: ministral-14b-2512
+    specialty: general
+    capabilities: [advanced_reasoning, large_context, multilingual_support, thinking_mode]
+    prompt_types: [general, scientific, historical, philosophical, ethical, political, economic, analytical, legal]
+  - name: ministral-14b-latest
+    specialty: general
+    capabilities: [advanced_reasoning, large_context, multilingual_support, thinking_mode]
+    prompt_types: [general, scientific, historical, philosophical, ethical, political, economic, analytical, legal]
+  - name: mistral-medium
+    specialty: general
+    capabilities: [advanced_reasoning, large_context, multilingual_support, thinking_mode]
+    prompt_types: [general, scientific, historical, analytical, legal, math]
+  - name: mistral-medium-3-5
+    specialty: general
+    capabilities: [advanced_reasoning, large_context, multilingual_support, thinking_mode]
+    prompt_types: [general, scientific, historical, analytical, legal, math]
+  - name: mistral-medium-3.5
+    specialty: general
+    capabilities: [advanced_reasoning, large_context, multilingual_support, thinking_mode]
+    prompt_types: [general, scientific, historical, analytical, legal, math]
+  - name: mistral-medium-3
+    specialty: general
+    capabilities: [advanced_reasoning, large_context, multilingual_support, thinking_mode]
+    prompt_types: [general, scientific, historical, analytical, legal, math]
+  - name: mistral-medium-2604
+    specialty: general
+    capabilities: [advanced_reasoning, large_context, multilingual_support, thinking_mode]
+    prompt_types: [general, scientific, historical, analytical, legal, math]
+  - name: mistral-medium
+    specialty: general
+    capabilities: [advanced_reasoning, large_context, multilingual_support, thinking_mode]
+    prompt_types: [general, scientific, historical, analytical, legal, math]
+  - name: mistral-medium-3-5
+    specialty: general
+    capabilities: [advanced_reasoning, large_context, multilingual_support, thinking_mode]
+    prompt_types: [general, scientific, historical, analytical, legal, math]
+  - name: mistral-medium-3.5
+    specialty: general
+    capabilities: [advanced_reasoning, large_context, multilingual_support, thinking_mode]
+    prompt_types: [general, scientific, historical, analytical, legal, math]
+  - name: mistral-medium-3
+    specialty: general
+    capabilities: [advanced_reasoning, large_context, multilingual_support, thinking_mode]
+    prompt_types: [general, scientific, historical, analytical, legal, math]
+  - name: mistral-medium-2604
+    specialty: general
+    capabilities: [advanced_reasoning, large_context, multilingual_support, thinking_mode]
+    prompt_types: [general, scientific, historical, analytical, legal, math]
+  - name: magistral-medium-latest
+    specialty: general
+    capabilities: [advanced_reasoning, multilingual_support, large_context, efficient_inference]
+    prompt_types: [general, scientific, historical, cultural, analytical]
+  - name: glm-5-2
+    specialty: coding
+    capabilities: [code_generation, agentic, large_context, advanced_reasoning]
+    prompt_types: [coding, analytical, math, scientific, general]
+  - name: zai-glm-5-2
+    specialty: coding
+    capabilities: [code_generation, agentic, tool_use, large_context]
+    prompt_types: [coding, analytical, math, general, ethical]
+  - name: zai-glm-5-3
+    specialty: coding
+    capabilities: [code_generation, large_context, agentic, advanced_reasoning]
+    prompt_types: [coding, analytical, scientific, general]
+  - name: zai-glm-5
+    specialty: coding
+    capabilities: [code_generation, large_context, agentic, advanced_reasoning]
+    prompt_types: [coding, analytical, scientific, general]
+  - name: zai-glm-latest
+    specialty: general
+    capabilities: [advanced_reasoning, large_context, multilingual_support, efficient_inference]
+    prompt_types: [general, scientific, historical, cultural, analytical]
 cohere:
-  fast_models: "command-r-08-2024"
-  default_model: "command-r-08-2024"
+  fast_models: "command-r7b-12-2024"
+  default_model: "command-a-03-2025"
   models:
-    - name: "command-r-08-2024"
-      specialty: "general"
-      capabilities: ["instruction_following", "diverse_tasks"]
-      prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic"]    
-
-# Configuración de modelos locales (Ollama)
+  - name: "command-a-03-2025"
+    specialty: "general"
+    capabilities: ["advanced_reasoning", "large_context", "multilingual_support", "tool_use", "agentic"]
+    prompt_types: ["general", "scientific", "analytical", "philosophical", "coding", "legal"]
+  - name: "command-a-reasoning-08-2025"
+    specialty: "general"
+    capabilities: ["advanced_reasoning", "thinking_mode", "tool_use"]
+    prompt_types: ["general", "scientific", "analytical", "math", "coding"]
+  - name: "command-r-plus-08-2024"
+    specialty: "general"
+    capabilities: ["instruction_following", "advanced_reasoning", "multilingual_support", "tool_use"]
+    prompt_types: ["general", "scientific", "analytical", "historical", "political", "economic"]
+  - name: "command-r-08-2024"
+    specialty: "general"
+    capabilities: ["instruction_following", "diverse_tasks"]
+    prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic"]
+  - name: "command-r7b-12-2024"
+    specialty: "general"
+    capabilities: ["efficient_inference", "low_latency", "instruction_following"]
+    prompt_types: ["general", "scientific", "cultural"]
+  - name: "c4ai-aya-expanse-32b"
+    specialty: "general"
+    capabilities: ["multilingual_support", "instruction_following", "broad_knowledge"]
+    prompt_types: ["general", "cultural", "historical", "analytical"]
+  - name: command-a-plus-05-2026
+    specialty: general
+    capabilities: [advanced_reasoning, multilingual_support, agentic, large_context]
+    prompt_types: [general, scientific, historical, analytical, coding, math, legal]
+  - name: command-a-translate-08-2025
+    specialty: general
+    capabilities: [multilingual_support, efficient_inference, large_context]
+    prompt_types: [general, cultural, scientific, historical, political, economic]
+  - name: command-a-vision-07-2025
+    specialty: multimodal
+    capabilities: [vision_understanding, advanced_reasoning, large_context]
+    prompt_types: [multimodal, visual, general, scientific, analytical]
+  - name: command-r7b-arabic-02-2025
+    specialty: general
+    capabilities: [multilingual_support, efficient_inference, advanced_reasoning]
+    prompt_types: [general, cultural, historical, political, legal]
 ollama:
   base_url: https://ollama.alexanderoviedofadul.dev/ #"http://localhost:11434"
-  default_model: "phi3.5:latest"
+  # Modelos locales realmente instalados (no-cloud) en el host Ollama (2026-06-23).
+  default_model: "gemma3:latest"  # 2026-10-04: phi3.5 se retiró del Ollama del VPS
   models:
-    - name: "phi3.5:latest"
-      specialty: "general"
-      capabilities: ["instruction_following", "efficient_inference", "compact_size"]
-      prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic"]    
+  - name: "gemma3:latest"
+    specialty: "multimodal"
+    capabilities: ["vision_understanding", "instruction_following", "efficient_inference"]
+    prompt_types: ["general", "visual", "multimodal", "scientific", "cultural"]
+  - name: bladealex/putchi:latest
+    specialty: general
+    capabilities: [advanced_reasoning, multilingual_support, efficient_inference]
+    prompt_types: [general, cultural, ethical, philosophical]
+  - name: qwen3.5:397b-cloud
+    specialty: multimodal
+    capabilities: [large_context, vision_understanding, multilingual_support, advanced_reasoning]
+    prompt_types: [multimodal, visual, general, scientific, analytical]
+  - name: qwen3-coder:480b-cloud
+    specialty: coding
+    capabilities: [code_generation, large_context, advanced_reasoning, tool_use]
+    prompt_types: [coding, analytical, math, scientific]
+  - name: kimi-k2:1t-cloud
+    specialty: general
+    capabilities: [large_context, multilingual_support, efficient_inference, advanced_reasoning]
+    prompt_types: [general, cultural, political, economic]
+  - name: bladealex/tutelabot-air:latest
+    specialty: general
+    capabilities: [advanced_reasoning, multilingual_support, efficient_inference, thinking_mode]
+    prompt_types: [general, historical, philosophical, ethical]
+  - name: bladealex/vulnsentinel-pro:latest
+    specialty: coding
+    capabilities: [code_generation, tool_use, advanced_reasoning, large_context]
+    prompt_types: [coding, analytical, legal]
+  - name: bladealex/vulnsentinel:v2
+    specialty: coding
+    capabilities: [code_generation, tool_use, advanced_reasoning]
+    prompt_types: [coding, analytical, legal]
+  - name: gemma3:27b-cloud
+    specialty: general
+    capabilities: [efficient_inference, multilingual_support, large_context]
+    prompt_types: [general, scientific, historical, cultural]
+  - name: gemma4:31b-cloud
+    specialty: general
+    capabilities: [efficient_inference, multilingual_support, large_context]
+    prompt_types: [general, scientific, historical, cultural]
+  - name: gpt-oss:120b-cloud
+    specialty: general
+    capabilities: [large_context, advanced_reasoning, multilingual_support]
+    prompt_types: [general, scientific, analytical, philosophical]
+  - name: bladealex/tutelabot:latest
+    specialty: general
+    capabilities: [advanced_reasoning, multilingual_support, efficient_inference, thinking_mode]
+    prompt_types: [general, historical, cultural, ethical]
+  - name: moondream:latest
+    specialty: multimodal
+    capabilities: [vision_understanding, large_context, efficient_inference]
+    prompt_types: [multimodal, visual, general]
+  - name: translategemma:latest
+    specialty: general
+    capabilities: [multilingual_support, efficient_inference, advanced_reasoning]
+    prompt_types: [general, cultural, scientific]
+ollama_cloud:
+  base_url: "https://ollama.com/v1"
+  fast_model: "gpt-oss:20b"          # Rápido y económico para respuestas inmediatas
+  default_model: "gpt-oss:120b"      # Predeterminado equilibrado (verificado funcional)
+  max_tokens: 4000
+  temperature: 0.7
+  models:
+    # ── Insignia / razonamiento general de gran escala ──
+  - name: "gpt-oss:120b"
+    specialty: "general"
+    capabilities: ["advanced_reasoning", "large_scale", "tool_use", "thinking_mode"]
+    prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic", "analytical"]
+  - name: "gpt-oss:20b"
+    specialty: "general"
+    capabilities: ["low_latency", "instruction_following", "tool_use", "thinking_mode"]
+    prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic"]
+  - name: "deepseek-v4-flash"
+    specialty: "general"
+    capabilities: ["efficient_inference", "advanced_reasoning", "large_context_1m"]
+    prompt_types: ["general", "scientific", "analytical", "coding"]
+  - name: "mistral-large-3:675b"
+    specialty: "general"
+    capabilities: ["advanced_reasoning", "large_scale", "multilingual_support", "large_context"]
+    prompt_types: ["general", "scientific", "analytical", "philosophical", "coding", "legal"]
+  - name: "glm-5.2"
+    specialty: "general"
+    capabilities: ["advanced_reasoning", "long_horizon_tasks", "tool_use", "thinking_mode", "agentic"]
+    prompt_types: ["general", "scientific", "analytical", "philosophical", "coding"]
+  - name: "kimi-k2.7-code"
+    specialty: "coding"
+    capabilities: ["code_generation", "agentic", "vision_understanding", "efficient_thinking"]
+    prompt_types: ["coding", "general", "analytical", "visual"]
+  - name: "kimi-k2.6"
+    specialty: "multimodal"
+    capabilities: ["vision_understanding", "agentic", "code_generation", "long_horizon_tasks"]
+    prompt_types: ["multimodal", "visual", "coding", "general", "analytical"]
+  - name: "minimax-m3"
+    specialty: "multimodal"
+    capabilities: ["vision_understanding", "agentic", "code_generation", "large_context_1m"]
+    prompt_types: ["multimodal", "visual", "coding", "general", "analytical"]
+  - name: "minimax-m2.7"
+    specialty: "coding"
+    capabilities: ["code_generation", "agentic", "productivity"]
+    prompt_types: ["coding", "general", "analytical"]
+  - name: "nemotron-3-ultra"
+    specialty: "general"
+    capabilities: ["high_throughput_reasoning", "long_horizon_tasks", "agentic", "large_scale"]
+    prompt_types: ["general", "scientific", "analytical", "coding"]
+  - name: "nemotron-3-super"
+    specialty: "general"
+    capabilities: ["moe_architecture", "multi_agent", "advanced_reasoning"]
+    prompt_types: ["general", "scientific", "analytical", "coding"]
+  - name: "nemotron-3-nano:30b"
+    specialty: "general"
+    capabilities: ["efficient_inference", "agentic", "low_latency"]
+    prompt_types: ["general", "scientific", "analytical"]
+  - name: "gemma4:31b"
+    specialty: "multimodal"
+    capabilities: ["vision_understanding", "advanced_reasoning", "agentic", "code_generation"]
+    prompt_types: ["multimodal", "visual", "general", "scientific", "analytical", "coding"]
+  - name: kimi-k3
+    specialty: multimodal
+    capabilities: [vision_understanding, multilingual_support, advanced_reasoning]
+    prompt_types: [general, visual, cultural, scientific, coding]
+  - name: glm-5.3
+    specialty: coding
+    capabilities: [code_generation, agentic, advanced_reasoning]
+    prompt_types: [coding, general, analytical]
+  - name: glm-5.3-flash
+    specialty: multimodal
+    capabilities: [vision_understanding, code_generation, agentic, advanced_reasoning]
+    prompt_types: [multimodal, visual, coding, general]
+  - name: deepseek-v4-pro:0813
+    specialty: general
+    capabilities: [large_context, advanced_reasoning, thinking_mode, multilingual_support]
+    prompt_types: [general, scientific, analytical, math]
+  - name: deepseek-v4.1-flash
+    specialty: multimodal
+    capabilities: [vision_understanding, advanced_reasoning, large_context, thinking_mode]
+    prompt_types: [general, visual, multimodal, scientific]
+minimax:
+  default_model: "MiniMax-M3"
+  models:
+  - name: "MiniMax-M3"
+    specialty: "multimodal"
+    capabilities: ["vision_understanding", "advanced_reasoning", "multimodal", "large_context", "agentic", "multilingual_support"]
+    prompt_types: ["general", "scientific", "analytical", "philosophical", "multimodal", "visual", "coding", "cultural", "legal"]
 
 # Configuración de prompts de análisis crítico
 critical_analysis:
@@ -738,258 +1328,84 @@ critical_analysis:
 
 # Configuración de asistentes especializados
 specialized_assistants:
-  - id: "asst_F33bnQzBVqQLcjveUTC14GaM"
-    name: "Asistente especializado en transformación digital"
-    keywords: ["transformación digital", "tecnología", "innovación", "estrategia digital", "cambio organizacional", "procesos digitales", "automatización", "inteligencia artificial", "big data", "analítica", "ciberseguridad", "nube", "IoT", "experiencia del cliente", "transformación cultural", "capacitación", "gestión del cambio", "liderazgo digital", "infraestructura tecnológica", "estrategias de marketing", "transformación empresarial", "tecnologías emergentes", "transformación sectorial", "transformación educativa", "transformación gubernamental", "legaltech", "fintech", "healthtech", "agrotech", "edtech", "retailtech", "industria 4.0", "smart cities", "transformación sostenible", "transformación inclusiva", "transformación resiliente", "transformación ética", "transformación global", "transformación local", "transformación personal", "transformación social", "transformación económica", "transformación política", "transformación cultural", "transformación educativa", "transformación ambiental", "transformación tecnológica", "transformación digital en Colombia", "transformación digital en América Latina", "transformación digital en el mundo", "transformación digital en la empresa", "transformación digital en el gobierno", "transformación digital en la educación", "transformación digital en la salud", "transformación digital en la justicia", "transformación digital en la banca", "transformación digital en la industria", "transformación digital en el comercio", "transformación digital en la agricultura", "transformación digital en la energía", "transformación digital en el transporte", "transformación digital en la logística", "transformación digital en la manufactura", "transformación digital en la construcción", "transformación digital en el turismo", "transformación digital en la cultura", "transformación digital en el deporte", "transformación digital en la moda", "transformación digital en la música", "transformación digital en el cine", "transformación digital en la televisión", "transformación digital en la literatura", "transformación digital en las artes", "transformación digital en la ciencia", "transformación digital en la tecnología", "transformación digital en la innovación", "transformación digital en la creatividad", "transformación digital en la comunicación", "transformación digital en la información", "transformación digital en la educación", "transformación digital en la salud", "transformación digital en la justicia", "transformación digital en la banca", "transformación digital en la industria", "transformación digital en el comercio", "transformación digital en la agricultura", "transformación digital en la energía", "transformación digital en el transporte", "transformación digital en la logística", "transformación digital en la manufactura", "transformación digital en la construcción", "transformación digital", "gobernanza de IA", "ética en IA", "derechos humanos en IA", "regulación de IA", "IA responsable", "IA inclusiva", "IA sostenible", "IA para el bien común", "transparencia en IA", "rendición de cuentas en IA", "seguridad en IA", "privacidad en IA", "IA centrada en el ser humano", "cooperación internacional en IA", "desarrollo de capacidades en IA", "IA y ODS", "marco global de datos de IA", "IA y diversidad cultural", "IA y equidad", "IA y justicia social", "IA y democracia", "IA y estado de derecho", "IA y políticas públicas", "IA y gobernanza global", "IA y desarrollo sostenible", "IA y educación", "IA y salud pública", "IA y cambio climático", "IA y derechos digitales", "IA y economía digital"]
-  - id: "asst_MzMayuSJV8AhP6vacv2ee3Xx"
-    name: "Asistente de Inteligencia Artificial"
-    keywords: [
-        "inteligencia artificial",
-        "asistente virtual",
-        "conocimiento",
-        "respuesta efectiva",
-        "interacción",
-        "aprendizaje automático",
-        "motivación",
-        "curiosidad",
-        "ayuda",
-        "orientación",
-        "generación de ideas",
-        "colaboración",
-        "análisis",
-        "resolución de problemas",
-        "creatividad",
-        "multidisciplinario",
-        "comunicación",
-        "recursos",
-        "gestión del conocimiento",
-        "experiencia compartida",
-        "precisión",
-        "eficiencia",
-        "adaptabilidad",
-        "soporte",
-        "consultas"
-    ]
-  - id: "asst_RfRNo5Ij76ieg7mV11CqYV9v"
-    name: "Asistente Virtual de Inteligencia Artificial"
-    keywords: [
-        "asistente virtual",
-        "inteligencia artificial",
-        "conocimiento amplio",
-        "tecnología",
-        "ciencia",
-        "arte",
-        "historia",
-        "cultura general",
-        "aprendizaje",
-        "curiosidad",
-        "respuestas educativas",
-        "información precisa",
-        "formato Markdown",
-        "interactividad",
-        "ayuda",
-        "paciencia",
-        "adaptabilidad",
-        "etica",
-        "mejora continua",
-        "asistencia personalizada",
-        "comunicación clara",
-        "usuarios",
-        "tareas",
-        "consultas"
-    ]
-  - id: "asst_gRTtnBm9jH8VUhAG20l1RBo1"
-    name: "Experto en Vigilancia Judicial"
-    keywords: [
-        "vigilancia judicial administrativa",
-        "autonomía",
-        "garantía",
-        "acuerdos",
-        "ACUERDO No. PSAA11-8716",
-        "protocolos",
-        "vigiláncia judicial",
-        "aplicación",
-        "vigilancia",
-        "eficiencia",
-        "vigilancia judicial",
-        "vigiláncia judicial administrativa",
-        "celeridad",
-        "responsabilidades",
-        "moralidad",
-        "supervisión",
-        "directrices",
-        "vigiláncia",
-        "servicio judicial",
-        "eficacia",
-        "CIRCULAR PCSJC17-43 de 2017",
-        "independencia",
-        "Ley 270 de 1996",
-        "consejo",
-        "normas"
-    ]
-  - id: "asst_gpCZlh5HpWgGAjHqbzFaaVpp"
-    name: "Experto en Constitución Colombiana"
-    keywords: ["constitución", "Colombia", "derechos fundamentales", "normativa", "cambio político", "principios constitucionales", "jurisprudencia", "mecanismos de tutela", "democracia", "tutela", "derechos", "libertades", "carta magna", "preámbulo", "organización del Estado", "derechos humanos", "poder judicial", "constitucionalidad", "reforma", "poder público", "representación", "participación ciudadana", "vida", "integridad", "libertad de expresión", "derecho al trabajo", "educación", "salud", "protección del medio ambiente", "igualdad"]
-  - id: "asst_dQhjl00QPrJrJDYrwhfE0gBX"
-    name: "ProcesAI CGP"
-    keywords: ["Código General del Proceso", "Teoría General del Proceso", "derecho procesal", "justicia", "Colombia", "leyes", "litigio", "derechos", "procedimientos", "actuación procesal", "normatividad", "garantías procesales", "principios procesales", "Ley 2213 de 2022", "Decreto 806 de 2020", "Devis Echandía", "jurisprudencia"]
-  - id: "asst_bbeLTquUNR8yFS1IVeeFff68"
-    name: "ColDisBot - Agente de Derecho Disciplinario Colombiano"
-    keywords: ["derecho disciplinario", "Colombia", "sanciones", "faltas disciplinarias", "procedimientos disciplinarios", "Ley 734 de 2002", "Ley 1952 de 2019", "Ley 2094 de 2021", "Decreto 1081 de 2015", "sujetos disciplinables", "garantías procesales", "falta", "sanción", "proceso disciplinario", "normativa disciplinaria", "justicia administrativa", "código disciplinario", "transparencia", "ética administrativa", "responsabilidad disciplinaria", "tutela de derechos fundamentales"]
-  - id: "asst_u0MhHeXqHiDztxdLLYrQeeQr"
-    name: "Parte Especial de los Delitos en Particular"
-    keywords: ["Código Penal", "delitos", "parte especial", "capítulos", "artículos", "tipo penal", "responsabilidad", "infracciones", "sanciones", "tipificación", "penalizaciones", "delitos comunes", "delitos especiales", "agresión", "robo", "homicidio", "estupro", "violencia", "tráfico de drogas", "fraude", "cohecho", "corrupción", "delitos económicos", "delitos contra la vida", "delitos contra el patrimonio", "delitos sexuales", "delitos informáticos", "delitos contra la libertad", "delitos contra la integridad", "delitos contra la administración pública"]
-  - id: "asst_XA5fS0wvyifI3afm1TnRooEQ"
-    name: "Experto en Reclasificaciones"
-    keywords: ["reclasificación", "experiencia", "análisis", "documentación", "validación", "comparación", "duplicación", "aportaciones", "estudios", "revisión meticulosa", "datos actualizados", "etapas", "validación de información", "evaluación exhaustiva", "proceso", "categorías", "metodología", "documentos", "información previa", "nuevos aportes", "información relevante", "estudios reportados"]
-  - id: "asst_Y0zt3gjDRD1T0ZBuyJpMB48R"
-    name: "Asesor Ético Educativo Colombiano"
-    keywords: ["ética", "educación", "Colombia", "normativas", "legislación", "prácticas éticas", "conflictos de interés", "dilemas morales", "comportamiento inapropiado", "instituciones educativas", "profesores", "administradores", "ambiente seguro", "respeto", "guía", "asesoramiento", "cumplimiento", "situaciones éticas", "análisis de casos", "recomendaciones", "mejores prácticas", "códigos deontológicos", "formación", "prevención", "bienestar", "transparencia"]
-  - id: "asst_hd43w2kRFA7VWNxIBy9Mgy8j"
-    name: "Guía de Resiliencia y Manifestación"
-    keywords: ["resiliencia", "manifestación", "apoyo emocional", "autodescubrimiento", "adaptación", "crecimiento personal", "visualización", "afirmaciones", "motivación", "superación", "cambio", "autoconocimiento", "estrategias", "bienestar", "mentalidad positiva", "sueños", "objetivos", "empoderamiento", "conexiones", "fábulas", "moralejas", "técnicas de manifestación", "flexibilidad", "transformación"]
-  - id: "asst_1AWeWoJvYpz7DpYvlaNb0pgk"
-    name: "Guía Tributaria Colombia"
-    keywords: ["impuestos", "DIAN", "recaudo", "devoluciones", "gestión de cartera", "obligaciones fiscales", "declaraciones tributarias", "regímenes especiales", "agentes de retención", "regímenes tributarios especiales", "cumplimiento fiscal", "mecanismos de recaudo", "obligaciones formales", "emprendimiento", "ejercicio de derechos", "normativa tributaria", "asesoramiento tributario", "planificación fiscal", "contribuyentes", "diligencia", "responsabilidad tributaria", "declaración de renta", "impuestos nacionales", "impuestos locales"]
-  - id: "asst_iHVYk93ksnQKHuN02XIktkMT"
-    name: "Artífice de Palabras"
-    keywords: ["copywriting", "redacción", "escritura creativa", "optimización de contenidos", "SEO", "gramática", "ortografía", "estilo", "técnicas narrativas", "persuasión", "contenido digital", "artículos", "blogging", "redacción publicitaria", "creación de copys", "edición", "mejora de textos", "estrategia de contenidos", "análisis de audiencia", "tono de voz", "revisión de textos", "contenido atractivo", "estructura de texto", "eficacia comunicativa", "imágenes hiperrealistas"]
-  - id: "asst_PAYD2AmBDTTat7F8bpFxOvXg"
-    name: "Asistente Profesional de Alexander"
-    keywords: ["Alexander", "Alexander Oviedo", "Alexander Oviedo Fadul"]
-  - id: "asst_g62x4oFzLFqB2Ncmj5YlDbBr"
-    name: "Asistente Lingüístico"
-    keywords: ["gramática", "vocabulario", "uso del idioma", "redacción", "escritura", "pronunciación", "comprensión", "estilo", "sinónimos", "antónimos", "expresiones idiomáticas", "análisis de textos", "corrrección", "claridad", "coherencia", "contexto", "lengua inglesa", "lenguaje técnico", "comunicación efectiva", "conversación", "ayuda con tareas", "recursos lingüísticos", "referencias gramaticales", "respuestas precisas", "energía positiva"]
-  - id: "asst_eYvjSdxv1VUA1Su9zQ07oyoO"
-    name: "Asistente de Análisis Documental"
-    keywords: ["análisis", "documentación", "traducción", "procesamiento de textos", "revisión", "edición", "estrategia de contenido", "optimización", "comprensión lingüística", "categorías", "estructura de documentos", "resumen", "interpretación", "comparación", "validación de información", "minuciosidad", "información precisa", "búsqueda", "gestión de datos", "apoyo administrativo", "creación de informes", "análisis crítico", "lenguaje claro", "apoyo en proyectos", "documentos en inglés", "documentos en español"]
-  - id: "asst_HP2cp1DT2LItd1tl6o4Bggma"
-    name: "Asistente espacializado en JusticIALab"
-    keywords: ["innovación", "Rama Judicial", "transformación digital", "propuestas", "evaluación", "creatividad", "soluciones tecnológicas", "gestión judicial", "expedientes electrónicos", "servicios digitales", "participación", "concursos", "necesidades judiciales", "criterios de evaluación", "incentivos", "apoyo a la gestión", "sistemas de información", "proyectos colaborativos", "mejora continua", "eficiencia", "transparencia", "acceso a la justicia", "desarrollo institucional"]
-  - id: "asst_TKhi6U5Cwp0XUO51d2PYp8Pz"
-    name: "Asistente Experto en Gestión Documental Judicial"
-    keywords: ["gestión de documentos electrónicos", "digitalización", "expedientes electrónicos", "autenticidad", "integridad", "disposición final", "firmas electrónicas", "protocolos", "metadatos", "estructura de carpetas", "nomenclatura de archivos", "escaneo de documentos", "tablas de retención documental", "calidad documental", "ciclo de vida", "control de versiones", "acceso remoto", "almacenamiento seguro", "mejores prácticas", "servicios de la Rama Judicial"]
-  - id: "asst_Jq3qTXZkvpCdn7jcoeNJmDbF"
-    name: "Asesor Legal en Salud Colombiano"
-    keywords: ["responsabilidad médica", "negligencia médica", "consentimiento informado", "historia clínica", "derechos de los pacientes", "deberes de los profesionales de la salud", "bioética", "bioderecho", "jurisprudencia colombiana", "normas del sector salud", "ética médica", "procesos de reclamación", "guías clínicas", "tatamiento integral", "accesibilidad en salud", "derechos fundamentales en salud", "calidad del servicio de salud", "seguridad del paciente", "mala práctica médica", "responsabilidad civil médica"]
-  - id: "asst_U2RDKhpEi2anWNKrzaGfY0y9"
-    name: "Asesor Legal Anticorrupción Colombiano"
-    keywords: ["corrupción", "ética judicial", "cohecho", "concusión", "peculado", "contratación estatal", "corrupción tributaria", "corrupción electoral", "corrupción judicial", "corrupción privada", "transparencia", "integridad", "derechos de los usuarios", "Plan Anticorrupción", "Carta de Trato Digno", "canales de denuncia", "mecanismos de control", "legislación colombiana", "procedimientos judiciales", "últimas modificaciones legislativas"]
-  - id: "asst_bhP2DkheIoBrZ0EIsV3TlTFw"
-    name: "Asesor en Gestión de Calidad en Salud"
-    keywords: [
-        "Calidad",
-        "Acreditación",
-        "PAMEC",
-        "Gestión de Salud",
-        "Mejoramiento Continuo",
-        "Auditoría",
-        "Normativa de Salud",
-        "Salud Ambulatoria",
-        "Salud Hospitalaria",
-        "Sistemas de Calidad",
-        "Seguridad del Paciente",
-        "Gestión del Riesgo",
-        "Atención al Usuario",
-        "Estandarización",
-        "Cumplimiento Normativo",
-        "Interoperabilidad",
-        "Plan de Mejoramiento",
-        "Equipos de Mejoramiento",
-        "Estrategias de Mejora",
-        "Gestión de Procesos",
-        "Evidencia Clínica",
-        "Resultados en Salud",
-        "Mejoramiento de Procesos",
-        "Calidad Asistencial",
-        "Educación Continua",
-        "Satisfacción del Paciente",
-        "Gestión de Información",
-        "Monitoreo y Evaluación",
-        "Protocolos de Atención",
-        "Indicadores de Calidad",
-        "Gestión de Recursos",
-        "Auditorías Internas",
-        "Acreditación Institucional",
-        "Calidad de la Atención",
-        "Prácticas Seguras",
-        "Manejo de Incidencias",
-        "Responsabilidad Profesional",
-        "Acciones Correctivas",
-        "Planificación Estratégica",
-        "Desarrollo Organizacional",
-        "Gestión de Proyectos",
-        "Cultura de Calidad",
-        "Mejoramiento de la Atención",
-        "Aseguramiento de la Calidad",
-        "Competencia Profesional",
-        "Sistemas de Gestión",
-        "Trabajo en Equipo",
-        "Liderazgo en Salud",
-        "Políticas de Calidad",
-        "Evaluación Externa",
-        "Autocontrol",
-        "Eficiencia Administrativa",
-        "Construcción de Conocimiento",
-        "Sistemas de Información en Salud",
-        "Reducción de Riesgos",
-        "Transparencia",
-        "Accesibilidad a Servicios",
-        "Compromiso Institucional",
-        "Gestión del Cambio",
-        "Enfoque en el Paciente",
-        "Benchmarking en Salud",
-        "Ética Profesional",
-        "Red de Atención Integral",
-        "Optimización de Procesos",
-        "Estrategias de Participación",
-        "Calidad Percibida",
-        "Estándares de Referencia",
-        "Patologías Crónicas",
-        "Investigación en Salud",
-        "Evaluación de Programas",
-        "Colaboración Interinstitucional",
-        "Regulación Sanitaria",
-        "Innovación en Salud",
-        "TECNOLOGÍAS de la Información",
-        "Sistemas de Salud",
-        "Rendimiento del Personal",
-        "Closure de Procesos",
-        "Calidad en la Comunicación",
-        "Desempeño Organizacional"]
-  - id: "asst_hFL7ZJI9yJm71GM6JOZSwLkr"
-    name: "Asesor en Traslados de Servidores Judiciales en Colombia"
-    keywords: ["sistema judicial", "traslados", "servidores judiciales", "Colombia", "legislación", "normativa", "derechos", "procedimientos", "recursos legales", "Ley 270 de 1996", "Ley 771 de 2002", "Acuerdo PCSJA17-10754", "Acuerdo PCSJA22-11956", "Código de Procedimiento Administrativo", "salud", "seguridad", "traslado recíproco", "requisitos", "plazos", "solicitudes", "denegación", "modificaciones"]
-  - id: "asst_aNHQtvJC55LqcG7MDMCe7v6N"
-    name: "Evaluación Judicial de Funcionarios y Empleados"
-    keywords: [
-      "Rama Judicial", "evaluación de servicios", "funcionarios de carrera",
-      "empleados judiciales", "calificación integral", "Consejo Superior de la Judicatura",
-      "Acuerdo PSAA16-10618", "Acuerdo PCSJA19-11393", "eficiencia", "calidad",
-      "rendimiento", "organización del trabajo", "publicaciones", "mejoramiento continuo",
-      "recursos", "notificación"]
-  - id: "asst_xpjUBpPwPk4dqW9Oy3kwk8jZ"
-    name: "Asesor de Trading y Análisis Técnico Institucional"
-    keywords: ["trading institucional", "análisis técnico", "mercados de opciones", "derivados", "estrategias", "gestión de riesgo", "volatilidad", "market profile", "price action", "correlaciones intermarket", "Greeks", "backtesting", "análisis cuantitativo", "optimización de ejecución", "Índices", "acciones", "ETFs", "materias primas", "VIX derivatives", "gestión de cartera"]
-  - id: "asst_KJJHC62qZfi6yIb54YoTaPHK"
-    name: "Sistema Unificado para la Provisión de Vacantes Temporales - BOCHICA"
-    keywords: [
-      "Rama Judicial", "vacantes temporales", "gestión", "sistema unificado",
-      "transparencia", "automatización", "postulaciones", "verificación de requisitos",
-      "Consejo Superior de la Judicatura", "Acuerdo PCSJA24-12238",
-      "eficiencia administrativa", "tecnología", "cloud", "usuarios", "nominadores",
-      "postulantes", "administradores", "evaluación", "selección"]
-  - id: "asst_xisQZwJ1bbmvXET8YG0eiAmb"
-    name: "TutelaBot - Asistente Especializado en Acción de Tutela y Derecho de Petición"
-    keywords: [
-      "Acción de Tutela", "Derecho de Petición", "Constitución Política 1991",
-      "Decreto 2591 de 1991", "Ley 1755 de 2015", "derechos fundamentales",
-      "protección constitucional", "mecanismos judiciales", "procedibilidad",
-      "subsidiariedad", "inmediatez", "legitimación", "impugnación",
-      "incidente de desacato", "silencio administrativo", "Corte Constitucional",
-      "peticiones de información", "consultas jurídicas", "modelos de documentos",
-      "trámites judiciales", "procedimientos administrativos"
-    ]
+- id: "asst_F33bnQzBVqQLcjveUTC14GaM"
+  name: "Asistente especializado en transformación digital"
+  keywords: ["transformación digital", "tecnología", "innovación", "estrategia digital", "cambio organizacional", "procesos digitales", "automatización", "inteligencia artificial", "big data", "analítica", "ciberseguridad", "nube", "IoT", "experiencia del cliente", "transformación cultural", "capacitación", "gestión del cambio", "liderazgo digital", "infraestructura tecnológica", "estrategias de marketing", "transformación empresarial", "tecnologías emergentes", "transformación sectorial", "transformación educativa", "transformación gubernamental", "legaltech", "fintech", "healthtech", "agrotech", "edtech", "retailtech", "industria 4.0", "smart cities", "transformación sostenible", "transformación inclusiva", "transformación resiliente", "transformación ética", "transformación global", "transformación local", "transformación personal", "transformación social", "transformación económica", "transformación política", "transformación cultural", "transformación educativa", "transformación ambiental", "transformación tecnológica", "transformación digital en Colombia", "transformación digital en América Latina", "transformación digital en el mundo", "transformación digital en la empresa", "transformación digital en el gobierno", "transformación digital en la educación", "transformación digital en la salud", "transformación digital en la justicia", "transformación digital en la banca", "transformación digital en la industria", "transformación digital en el comercio", "transformación digital en la agricultura", "transformación digital en la energía", "transformación digital en el transporte", "transformación digital en la logística", "transformación digital en la manufactura", "transformación digital en la construcción", "transformación digital en el turismo", "transformación digital en la cultura", "transformación digital en el deporte", "transformación digital en la moda", "transformación digital en la música", "transformación digital en el cine", "transformación digital en la televisión", "transformación digital en la literatura", "transformación digital en las artes", "transformación digital en la ciencia", "transformación digital en la tecnología", "transformación digital en la innovación", "transformación digital en la creatividad", "transformación digital en la comunicación", "transformación digital en la información", "transformación digital en la educación", "transformación digital en la salud", "transformación digital en la justicia", "transformación digital en la banca", "transformación digital en la industria", "transformación digital en el comercio", "transformación digital en la agricultura", "transformación digital en la energía", "transformación digital en el transporte", "transformación digital en la logística", "transformación digital en la manufactura", "transformación digital en la construcción", "transformación digital", "gobernanza de IA", "ética en IA", "derechos humanos en IA", "regulación de IA", "IA responsable", "IA inclusiva", "IA sostenible", "IA para el bien común", "transparencia en IA", "rendición de cuentas en IA", "seguridad en IA", "privacidad en IA", "IA centrada en el ser humano", "cooperación internacional en IA", "desarrollo de capacidades en IA", "IA y ODS", "marco global de datos de IA", "IA y diversidad cultural", "IA y equidad", "IA y justicia social", "IA y democracia", "IA y estado de derecho", "IA y políticas públicas", "IA y gobernanza global", "IA y desarrollo sostenible", "IA y educación", "IA y salud pública", "IA y cambio climático", "IA y derechos digitales", "IA y economía digital"]
+- id: "asst_MzMayuSJV8AhP6vacv2ee3Xx"
+  name: "Asistente de Inteligencia Artificial"
+  keywords: ["inteligencia artificial", "asistente virtual", "conocimiento", "respuesta efectiva", "interacción", "aprendizaje automático", "motivación", "curiosidad", "ayuda", "orientación", "generación de ideas", "colaboración", "análisis", "resolución de problemas", "creatividad", "multidisciplinario", "comunicación", "recursos", "gestión del conocimiento", "experiencia compartida", "precisión", "eficiencia", "adaptabilidad", "soporte", "consultas"]
+- id: "asst_RfRNo5Ij76ieg7mV11CqYV9v"
+  name: "Asistente Virtual de Inteligencia Artificial"
+  keywords: ["asistente virtual", "inteligencia artificial", "conocimiento amplio", "tecnología", "ciencia", "arte", "historia", "cultura general", "aprendizaje", "curiosidad", "respuestas educativas", "información precisa", "formato Markdown", "interactividad", "ayuda", "paciencia", "adaptabilidad", "etica", "mejora continua", "asistencia personalizada", "comunicación clara", "usuarios", "tareas", "consultas"]
+- id: "asst_gRTtnBm9jH8VUhAG20l1RBo1"
+  name: "Experto en Vigilancia Judicial"
+  keywords: ["vigilancia judicial administrativa", "autonomía", "garantía", "acuerdos", "ACUERDO No. PSAA11-8716", "protocolos", "vigiláncia judicial", "aplicación", "vigilancia", "eficiencia", "vigilancia judicial", "vigiláncia judicial administrativa", "celeridad", "responsabilidades", "moralidad", "supervisión", "directrices", "vigiláncia", "servicio judicial", "eficacia", "CIRCULAR PCSJC17-43 de 2017", "independencia", "Ley 270 de 1996", "consejo", "normas"]
+- id: "asst_gpCZlh5HpWgGAjHqbzFaaVpp"
+  name: "Experto en Constitución Colombiana"
+  keywords: ["constitución", "Colombia", "derechos fundamentales", "normativa", "cambio político", "principios constitucionales", "jurisprudencia", "mecanismos de tutela", "democracia", "tutela", "derechos", "libertades", "carta magna", "preámbulo", "organización del Estado", "derechos humanos", "poder judicial", "constitucionalidad", "reforma", "poder público", "representación", "participación ciudadana", "vida", "integridad", "libertad de expresión", "derecho al trabajo", "educación", "salud", "protección del medio ambiente", "igualdad"]
+- id: "asst_dQhjl00QPrJrJDYrwhfE0gBX"
+  name: "ProcesAI CGP"
+  keywords: ["Código General del Proceso", "Teoría General del Proceso", "derecho procesal", "justicia", "Colombia", "leyes", "litigio", "derechos", "procedimientos", "actuación procesal", "normatividad", "garantías procesales", "principios procesales", "Ley 2213 de 2022", "Decreto 806 de 2020", "Devis Echandía", "jurisprudencia"]
+- id: "asst_bbeLTquUNR8yFS1IVeeFff68"
+  name: "ColDisBot - Agente de Derecho Disciplinario Colombiano"
+  keywords: ["derecho disciplinario", "Colombia", "sanciones", "faltas disciplinarias", "procedimientos disciplinarios", "Ley 734 de 2002", "Ley 1952 de 2019", "Ley 2094 de 2021", "Decreto 1081 de 2015", "sujetos disciplinables", "garantías procesales", "falta", "sanción", "proceso disciplinario", "normativa disciplinaria", "justicia administrativa", "código disciplinario", "transparencia", "ética administrativa", "responsabilidad disciplinaria", "tutela de derechos fundamentales"]
+- id: "asst_u0MhHeXqHiDztxdLLYrQeeQr"
+  name: "Parte Especial de los Delitos en Particular"
+  keywords: ["Código Penal", "delitos", "parte especial", "capítulos", "artículos", "tipo penal", "responsabilidad", "infracciones", "sanciones", "tipificación", "penalizaciones", "delitos comunes", "delitos especiales", "agresión", "robo", "homicidio", "estupro", "violencia", "tráfico de drogas", "fraude", "cohecho", "corrupción", "delitos económicos", "delitos contra la vida", "delitos contra el patrimonio", "delitos sexuales", "delitos informáticos", "delitos contra la libertad", "delitos contra la integridad", "delitos contra la administración pública"]
+- id: "asst_XA5fS0wvyifI3afm1TnRooEQ"
+  name: "Experto en Reclasificaciones"
+  keywords: ["reclasificación", "experiencia", "análisis", "documentación", "validación", "comparación", "duplicación", "aportaciones", "estudios", "revisión meticulosa", "datos actualizados", "etapas", "validación de información", "evaluación exhaustiva", "proceso", "categorías", "metodología", "documentos", "información previa", "nuevos aportes", "información relevante", "estudios reportados"]
+- id: "asst_Y0zt3gjDRD1T0ZBuyJpMB48R"
+  name: "Asesor Ético Educativo Colombiano"
+  keywords: ["ética", "educación", "Colombia", "normativas", "legislación", "prácticas éticas", "conflictos de interés", "dilemas morales", "comportamiento inapropiado", "instituciones educativas", "profesores", "administradores", "ambiente seguro", "respeto", "guía", "asesoramiento", "cumplimiento", "situaciones éticas", "análisis de casos", "recomendaciones", "mejores prácticas", "códigos deontológicos", "formación", "prevención", "bienestar", "transparencia"]
+- id: "asst_hd43w2kRFA7VWNxIBy9Mgy8j"
+  name: "Guía de Resiliencia y Manifestación"
+  keywords: ["resiliencia", "manifestación", "apoyo emocional", "autodescubrimiento", "adaptación", "crecimiento personal", "visualización", "afirmaciones", "motivación", "superación", "cambio", "autoconocimiento", "estrategias", "bienestar", "mentalidad positiva", "sueños", "objetivos", "empoderamiento", "conexiones", "fábulas", "moralejas", "técnicas de manifestación", "flexibilidad", "transformación"]
+- id: "asst_1AWeWoJvYpz7DpYvlaNb0pgk"
+  name: "Guía Tributaria Colombia"
+  keywords: ["impuestos", "DIAN", "recaudo", "devoluciones", "gestión de cartera", "obligaciones fiscales", "declaraciones tributarias", "regímenes especiales", "agentes de retención", "regímenes tributarios especiales", "cumplimiento fiscal", "mecanismos de recaudo", "obligaciones formales", "emprendimiento", "ejercicio de derechos", "normativa tributaria", "asesoramiento tributario", "planificación fiscal", "contribuyentes", "diligencia", "responsabilidad tributaria", "declaración de renta", "impuestos nacionales", "impuestos locales"]
+- id: "asst_iHVYk93ksnQKHuN02XIktkMT"
+  name: "Artífice de Palabras"
+  keywords: ["copywriting", "redacción", "escritura creativa", "optimización de contenidos", "SEO", "gramática", "ortografía", "estilo", "técnicas narrativas", "persuasión", "contenido digital", "artículos", "blogging", "redacción publicitaria", "creación de copys", "edición", "mejora de textos", "estrategia de contenidos", "análisis de audiencia", "tono de voz", "revisión de textos", "contenido atractivo", "estructura de texto", "eficacia comunicativa", "imágenes hiperrealistas"]
+- id: "asst_PAYD2AmBDTTat7F8bpFxOvXg"
+  name: "Asistente Profesional de Alexander"
+  keywords: ["Alexander", "Alexander Oviedo", "Alexander Oviedo Fadul"]
+- id: "asst_g62x4oFzLFqB2Ncmj5YlDbBr"
+  name: "Asistente Lingüístico"
+  keywords: ["gramática", "vocabulario", "uso del idioma", "redacción", "escritura", "pronunciación", "comprensión", "estilo", "sinónimos", "antónimos", "expresiones idiomáticas", "análisis de textos", "corrrección", "claridad", "coherencia", "contexto", "lengua inglesa", "lenguaje técnico", "comunicación efectiva", "conversación", "ayuda con tareas", "recursos lingüísticos", "referencias gramaticales", "respuestas precisas", "energía positiva"]
+- id: "asst_eYvjSdxv1VUA1Su9zQ07oyoO"
+  name: "Asistente de Análisis Documental"
+  keywords: ["análisis", "documentación", "traducción", "procesamiento de textos", "revisión", "edición", "estrategia de contenido", "optimización", "comprensión lingüística", "categorías", "estructura de documentos", "resumen", "interpretación", "comparación", "validación de información", "minuciosidad", "información precisa", "búsqueda", "gestión de datos", "apoyo administrativo", "creación de informes", "análisis crítico", "lenguaje claro", "apoyo en proyectos", "documentos en inglés", "documentos en español"]
+- id: "asst_HP2cp1DT2LItd1tl6o4Bggma"
+  name: "Asistente espacializado en JusticIALab"
+  keywords: ["innovación", "Rama Judicial", "transformación digital", "propuestas", "evaluación", "creatividad", "soluciones tecnológicas", "gestión judicial", "expedientes electrónicos", "servicios digitales", "participación", "concursos", "necesidades judiciales", "criterios de evaluación", "incentivos", "apoyo a la gestión", "sistemas de información", "proyectos colaborativos", "mejora continua", "eficiencia", "transparencia", "acceso a la justicia", "desarrollo institucional"]
+- id: "asst_TKhi6U5Cwp0XUO51d2PYp8Pz"
+  name: "Asistente Experto en Gestión Documental Judicial"
+  keywords: ["gestión de documentos electrónicos", "digitalización", "expedientes electrónicos", "autenticidad", "integridad", "disposición final", "firmas electrónicas", "protocolos", "metadatos", "estructura de carpetas", "nomenclatura de archivos", "escaneo de documentos", "tablas de retención documental", "calidad documental", "ciclo de vida", "control de versiones", "acceso remoto", "almacenamiento seguro", "mejores prácticas", "servicios de la Rama Judicial"]
+- id: "asst_Jq3qTXZkvpCdn7jcoeNJmDbF"
+  name: "Asesor Legal en Salud Colombiano"
+  keywords: ["responsabilidad médica", "negligencia médica", "consentimiento informado", "historia clínica", "derechos de los pacientes", "deberes de los profesionales de la salud", "bioética", "bioderecho", "jurisprudencia colombiana", "normas del sector salud", "ética médica", "procesos de reclamación", "guías clínicas", "tatamiento integral", "accesibilidad en salud", "derechos fundamentales en salud", "calidad del servicio de salud", "seguridad del paciente", "mala práctica médica", "responsabilidad civil médica"]
+- id: "asst_U2RDKhpEi2anWNKrzaGfY0y9"
+  name: "Asesor Legal Anticorrupción Colombiano"
+  keywords: ["corrupción", "ética judicial", "cohecho", "concusión", "peculado", "contratación estatal", "corrupción tributaria", "corrupción electoral", "corrupción judicial", "corrupción privada", "transparencia", "integridad", "derechos de los usuarios", "Plan Anticorrupción", "Carta de Trato Digno", "canales de denuncia", "mecanismos de control", "legislación colombiana", "procedimientos judiciales", "últimas modificaciones legislativas"]
+- id: "asst_bhP2DkheIoBrZ0EIsV3TlTFw"
+  name: "Asesor en Gestión de Calidad en Salud"
+  keywords: ["Calidad", "Acreditación", "PAMEC", "Gestión de Salud", "Mejoramiento Continuo", "Auditoría", "Normativa de Salud", "Salud Ambulatoria", "Salud Hospitalaria", "Sistemas de Calidad", "Seguridad del Paciente", "Gestión del Riesgo", "Atención al Usuario", "Estandarización", "Cumplimiento Normativo", "Interoperabilidad", "Plan de Mejoramiento", "Equipos de Mejoramiento", "Estrategias de Mejora", "Gestión de Procesos", "Evidencia Clínica", "Resultados en Salud", "Mejoramiento de Procesos", "Calidad Asistencial", "Educación Continua", "Satisfacción del Paciente", "Gestión de Información", "Monitoreo y Evaluación", "Protocolos de Atención", "Indicadores de Calidad", "Gestión de Recursos", "Auditorías Internas", "Acreditación Institucional", "Calidad de la Atención", "Prácticas Seguras", "Manejo de Incidencias", "Responsabilidad Profesional", "Acciones Correctivas", "Planificación Estratégica", "Desarrollo Organizacional", "Gestión de Proyectos", "Cultura de Calidad", "Mejoramiento de la Atención", "Aseguramiento de la Calidad", "Competencia Profesional", "Sistemas de Gestión", "Trabajo en Equipo", "Liderazgo en Salud", "Políticas de Calidad", "Evaluación Externa", "Autocontrol", "Eficiencia Administrativa", "Construcción de Conocimiento", "Sistemas de Información en Salud", "Reducción de Riesgos", "Transparencia", "Accesibilidad a Servicios", "Compromiso Institucional", "Gestión del Cambio", "Enfoque en el Paciente", "Benchmarking en Salud", "Ética Profesional", "Red de Atención Integral", "Optimización de Procesos", "Estrategias de Participación", "Calidad Percibida", "Estándares de Referencia", "Patologías Crónicas", "Investigación en Salud", "Evaluación de Programas", "Colaboración Interinstitucional", "Regulación Sanitaria", "Innovación en Salud", "TECNOLOGÍAS de la Información", "Sistemas de Salud", "Rendimiento del Personal", "Closure de Procesos", "Calidad en la Comunicación", "Desempeño Organizacional"]
+- id: "asst_hFL7ZJI9yJm71GM6JOZSwLkr"
+  name: "Asesor en Traslados de Servidores Judiciales en Colombia"
+  keywords: ["sistema judicial", "traslados", "servidores judiciales", "Colombia", "legislación", "normativa", "derechos", "procedimientos", "recursos legales", "Ley 270 de 1996", "Ley 771 de 2002", "Acuerdo PCSJA17-10754", "Acuerdo PCSJA22-11956", "Código de Procedimiento Administrativo", "salud", "seguridad", "traslado recíproco", "requisitos", "plazos", "solicitudes", "denegación", "modificaciones"]
+- id: "asst_aNHQtvJC55LqcG7MDMCe7v6N"
+  name: "Evaluación Judicial de Funcionarios y Empleados"
+  keywords: ["Rama Judicial", "evaluación de servicios", "funcionarios de carrera", "empleados judiciales", "calificación integral", "Consejo Superior de la Judicatura", "Acuerdo PSAA16-10618", "Acuerdo PCSJA19-11393", "eficiencia", "calidad", "rendimiento", "organización del trabajo", "publicaciones", "mejoramiento continuo", "recursos", "notificación"]
+- id: "asst_xpjUBpPwPk4dqW9Oy3kwk8jZ"
+  name: "Asesor de Trading y Análisis Técnico Institucional"
+  keywords: ["trading institucional", "análisis técnico", "mercados de opciones", "derivados", "estrategias", "gestión de riesgo", "volatilidad", "market profile", "price action", "correlaciones intermarket", "Greeks", "backtesting", "análisis cuantitativo", "optimización de ejecución", "Índices", "acciones", "ETFs", "materias primas", "VIX derivatives", "gestión de cartera"]
+- id: "asst_KJJHC62qZfi6yIb54YoTaPHK"
+  name: "Sistema Unificado para la Provisión de Vacantes Temporales - BOCHICA"
+  keywords: ["Rama Judicial", "vacantes temporales", "gestión", "sistema unificado", "transparencia", "automatización", "postulaciones", "verificación de requisitos", "Consejo Superior de la Judicatura", "Acuerdo PCSJA24-12238", "eficiencia administrativa", "tecnología", "cloud", "usuarios", "nominadores", "postulantes", "administradores", "evaluación", "selección"]
+- id: "asst_xisQZwJ1bbmvXET8YG0eiAmb"
+  name: "TutelaBot - Asistente Especializado en Acción de Tutela y Derecho de Petición"
+  keywords: ["Acción de Tutela", "Derecho de Petición", "Constitución Política 1991", "Decreto 2591 de 1991", "Ley 1755 de 2015", "derechos fundamentales", "protección constitucional", "mecanismos judiciales", "procedibilidad", "subsidiariedad", "inmediatez", "legitimación", "impugnación", "incidente de desacato", "silencio administrativo", "Corte Constitucional", "peticiones de información", "consultas jurídicas", "modelos de documentos", "trámites judiciales", "procedimientos administrativos"]
 
 # Configuración general
 general:
@@ -999,26 +1415,34 @@ general:
 
 # Prioridad de procesamiento
 processing_priority:
-  - groq
-  - openrouter
-  - deepinfra
-  - deepseek
-  - z-ai
-  - routellm
-  - specialized_assistants
-  - moa
-  - together
-  - openai
-  - anthropic
-  - cohere
-  - mistral
-  - ollama
+- assistant             # expertos especializados (cedula360 /api/legal) si aplican
+- ollama_cloud          # motor principal del flujo (benchmark por tarea)
+- deepseek              # fallback principal (v4-flash/v4-pro)
+- minimax
+- mistral
+- moa
+- ollama
+- groq
+- openrouter
+- deepinfra
+- z-ai
+- routellm
+- together
+- openai
+- anthropic
+- cohere
 
 # Configuración de utilidades
 utilities:
   web_search:
     enabled: true
     max_results: 5
+    search_methods:
+    - ollama
+    - minimax
+    - you
+    - tavily
+    - duckduckgo
   image_analysis:
     enabled: false
     model: "llava:latest"
@@ -1055,13 +1479,16 @@ usage_limits:
 
 # Configuración de MOA (Mixture of Agents)
 moa:
+  # MOA sobre Ollama Cloud (modelos del benchmark por tarea). El agregador y las
+  # propuestas se ejecutan con process_with_ollama_cloud (ver run_moa / run_multiple_models).
   enabled: true
-  aggregator_model: "meta-llama/Llama-3.3-70B-Instruct-Turbo"  # Modelo potente para síntesis final
-  proposal_models:
-    - "Qwen/Qwen2.5-72B-Instruct-Turbo"         # Excelente razonamiento
-    - "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"  # Rápido y económico
-    - "mistralai/Mistral-7B-Instruct-v0.3"      # Equilibrado
-    - "Qwen/Qwen2.5-7B-Instruct-Turbo"          # Rápido, buen rendimiento
+  api: "ollama_cloud"
+  aggregator_model: "gpt-oss:120b"      # mejor síntesis all-around (benchmark)
+  proposal_models:                      # diversidad de perspectivas para el MOA
+  - gemma4:31b
+  - mistral-large-3:675b
+  - gpt-oss:20b
+  - glm-5.2
   max_layers: 3
   aggregator_system_prompt: "You are an expert aggregator. Synthesize the following responses into a single, coherent answer, taking into account the web context if provided."
 
@@ -1074,28 +1501,31 @@ thresholds:
   synthesis_complexity: 0.6  # Umbral para activar síntesis final
 
 # Configuración de evaluación de modelos
+# Cascadas por etapa según el benchmark (tools/benchmark_tasks.py): Ollama Cloud
+# principal + mejor DeepSeek como fallback. (Regenerar con el benchmark si cambian
+# los modelos: tools/benchmark_results.json.)
 evaluation_models:
-  initial:
-    api: "deepseek"
-    model: "deepseek-chat"  # Rápido y económico para evaluación inicial
-    backup_api: "groq"
-    backup_model: "groq/compound"  # Fallback rápido con búsqueda web
-    backup_api2: "groq"
-    backup_model2: "llama-3.1-8b-instant"  # Ultra rápido
-  final:
-    api: "groq"
-    model: "llama-3.3-70b-versatile"  # Alta calidad para evaluación final
+  initial:                      # clasificación/evaluación rápida (tarea: classify)
+    api: "ollama_cloud"
+    model: "gemma4:31b"         # top en classify, latencia mínima
     backup_api: "deepseek"
-    backup_model: "deepseek-reasoner"  # Razonamiento profundo
-    backup_api2: "deepinfra"
-    backup_model2: "Qwen/Qwen2.5-72B-Instruct"  # Alternativa potente
-  meta_analysis:
-    api: "deepseek"
-    model: "deepseek-reasoner"  # Mejor para meta-análisis y síntesis
-    backup_api: "deepinfra"
-    backup_model: "Qwen/Qwen2.5-72B-Instruct"  # Excelente razonamiento
-    backup_api2: "groq"
-    backup_model2: "llama-3.3-70b-versatile"  # Alternativa verificada
+    backup_model: "deepseek-v4-flash"
+    backup_api2: "ollama_cloud"
+    backup_model2: "mistral-large-3:675b"
+  final:                        # evaluación final / síntesis (tarea: general/reasoning)
+    api: "ollama_cloud"
+    model: "gpt-oss:120b"       # top calidad+latencia en general/reasoning (benchmark)
+    backup_api: "deepseek"
+    backup_model: "deepseek-v4-flash"
+    backup_api2: "ollama_cloud"
+    backup_model2: "mistral-large-3:675b"
+  meta_analysis:                # meta-análisis / resumen (tarea: summary/reasoning)
+    api: "ollama_cloud"
+    model: "mistral-large-3:675b" # top en summary (benchmark)
+    backup_api: "deepseek"
+    backup_model: "deepseek-v4-flash"
+    backup_api2: "ollama_cloud"
+    backup_model2: "glm-5.2"
 
 # Configuración de selección de prompts para los agentes
 prompt_selection:
@@ -1109,13 +1539,3 @@ agent_selection:
   fallback_type: "Asistente de Inteligencia Artificial"
   threshold: 0.6
   validation_model: "command-r-08-2024"
-
-# Configuración de proveedores de busqueda web
-utilities:
-  web_search:
-    enabled: true
-    max_results: 3
-    search_methods:
-      - you
-      - tavily
-      - duckduckgo

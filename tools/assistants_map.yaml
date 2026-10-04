@@ -1,0 +1,52 @@
+# Mapeo de los 26 asistentes especializados (OpenAI asst_*) → área del corpus
+# jurídico colombiano (claude-for-legal-colombia). Usado por:
+#   - config.yaml (campo cedula360_area por asistente)
+#   - el Mentor (PROMPTS_SISTEMA por área)
+#   - la ingesta de documentos por área
+#
+# Áreas jurídicas existentes (colombia/pipeline/_config.py): civil, penal,
+# laboral, familia, constitucional, administrativo, comercial, procesal,
+# tributario, disciplinario, ambiental, consumidor, proteccion-datos,
+# internacional, general.
+# Áreas NUEVAS (no jurídicas / transversales) a añadir: judicial-admin,
+# ia-gobernanza, redaccion, analisis-documental, salud, finanzas-trading,
+# desarrollo-personal, etica-educativa.
+
+asistentes:
+  asst_F33bnQzBVqQLcjveUTC14GaM: { area: ia-gobernanza,       name: "Transformación Digital" }
+  asst_MzMayuSJV8AhP6vacv2ee3Xx: { area: ia-gobernanza,       name: "Asistente de IA" }
+  asst_RfRNo5Ij76ieg7mV11CqYV9v: { area: ia-gobernanza,       name: "Asistente Virtual de IA" }
+  asst_gRTtnBm9jH8VUhAG20l1RBo1: { area: judicial-admin,      name: "Vigilancia Judicial" }
+  asst_gpCZlh5HpWgGAjHqbzFaaVpp: { area: constitucional,      name: "Constitución Colombiana" }
+  asst_dQhjl00QPrJrJDYrwhfE0gBX: { area: procesal,            name: "ProcesAI CGP" }
+  asst_bbeLTquUNR8yFS1IVeeFff68: { area: disciplinario,       name: "Derecho Disciplinario" }
+  asst_u0MhHeXqHiDztxdLLYrQeeQr: { area: penal,               name: "Parte Especial de los Delitos" }
+  asst_XA5fS0wvyifI3afm1TnRooEQ: { area: judicial-admin,      name: "Reclasificaciones" }
+  asst_Y0zt3gjDRD1T0ZBuyJpMB48R: { area: etica-educativa,     name: "Asesor Ético Educativo" }
+  asst_hd43w2kRFA7VWNxIBy9Mgy8j: { area: desarrollo-personal, name: "Resiliencia y Manifestación" }
+  asst_1AWeWoJvYpz7DpYvlaNb0pgk: { area: tributario,          name: "Guía Tributaria Colombia" }
+  asst_iHVYk93ksnQKHuN02XIktkMT: { area: redaccion,           name: "Artífice de Palabras" }
+  asst_PAYD2AmBDTTat7F8bpFxOvXg: { area: general,             name: "Asistente Profesional de Alexander" }
+  asst_g62x4oFzLFqB2Ncmj5YlDbBr: { area: redaccion,           name: "Asistente Lingüístico" }
+  asst_eYvjSdxv1VUA1Su9zQ07oyoO: { area: analisis-documental, name: "Análisis Documental" }
+  asst_HP2cp1DT2LItd1tl6o4Bggma: { area: judicial-admin,      name: "JusticIALab" }
+  asst_TKhi6U5Cwp0XUO51d2PYp8Pz: { area: judicial-admin,      name: "Gestión Documental Judicial" }
+  asst_Jq3qTXZkvpCdn7jcoeNJmDbF: { area: salud,               name: "Asesor Legal en Salud" }
+  asst_U2RDKhpEi2anWNKrzaGfY0y9: { area: penal,               name: "Anticorrupción" }
+  asst_bhP2DkheIoBrZ0EIsV3TlTFw: { area: salud,               name: "Gestión de Calidad en Salud" }
+  asst_hFL7ZJI9yJm71GM6JOZSwLkr: { area: judicial-admin,      name: "Traslados de Servidores Judiciales" }
+  asst_aNHQtvJC55LqcG7MDMCe7v6N: { area: judicial-admin,      name: "Evaluación Judicial de Funcionarios" }
+  asst_xpjUBpPwPk4dqW9Oy3kwk8jZ: { area: finanzas-trading,    name: "Trading y Análisis Técnico" }
+  asst_KJJHC62qZfi6yIb54YoTaPHK: { area: judicial-admin,      name: "BOCHICA (vacantes temporales)" }
+  asst_xisQZwJ1bbmvXET8YG0eiAmb: { area: constitucional,      name: "TutelaBot (tutela y petición)" }
+
+# Áreas nuevas a registrar en colombia/pipeline/_config.py → AREAS
+areas_nuevas:
+  - judicial-admin
+  - ia-gobernanza
+  - redaccion
+  - analisis-documental
+  - salud
+  - finanzas-trading
+  - desarrollo-personal
+  - etica-educativa

@@ -47,11 +47,30 @@ class AgentSelector:
         self.default_model = config["agent_selection"]["default_model"]
         self.fallback_type = config["agent_selection"]["fallback_type"]
         self.threshold = config["agent_selection"]["threshold"]
-        self.cohere_client = cohere.Client(api_key=get_secret("COHERE_API_KEY"))
+        # Embeddings para la selección semántica de agentes. Backend preferente:
+        # Cohere; si su key está ausente/comentada, se usa Mistral (mistral-embed);
+        # si ninguno está disponible, se degrada a la selección de respaldo.
+        cohere_key = get_secret("COHERE_API_KEY")
+        self.cohere_client = cohere.Client(api_key=cohere_key) if cohere_key else None
+        self._mistral_key = get_secret("MISTRAL_API_KEY")
+        self._mistral_embed = None  # se crea perezosamente
+        if self.cohere_client:
+            self.embed_backend = "cohere"
+        elif self._mistral_key:
+            self.embed_backend = "mistral"
+        else:
+            self.embed_backend = None
 
     # Seleccionar el agente más adecuado para una consulta
     def select_agent(self, query: str) -> Tuple[str, float]:
-        query_embedding = self.get_embedding(query)
+        # Sin backend de embeddings -> usar el agente de respaldo.
+        if not self.embed_backend:
+            return self.get_fallback_agent()
+        try:
+            query_embedding = self.get_embedding(query)
+        except Exception as e:  # noqa: BLE001
+            logging.warning(f"Embeddings ({self.embed_backend}) no disponibles: {e}. Usando fallback.")
+            return self.get_fallback_agent()
         best_score = 0
         best_agent = None
 
@@ -66,12 +85,22 @@ class AgentSelector:
         else:
             return self.get_fallback_agent()
 
-    # Obtener el agente de reserva
+    # Generar embedding del texto con el backend disponible (cohere o mistral)
     def get_embedding(self, text: str) -> List[float]:
-        response = self.cohere_client.embed(
-            texts=[text], model="embed-english-v3.0", input_type="search_query"
-        )
-        return response.embeddings[0]
+        if self.embed_backend == "cohere":
+            response = self.cohere_client.embed(
+                texts=[text], model="embed-english-v3.0", input_type="search_query"
+            )
+            return response.embeddings[0]
+        if self.embed_backend == "mistral":
+            if self._mistral_embed is None:
+                from mistralai import Mistral
+                self._mistral_embed = Mistral(api_key=self._mistral_key)
+            resp = self._mistral_embed.embeddings.create(
+                model="mistral-embed", inputs=[text]
+            )
+            return resp.data[0].embedding
+        raise RuntimeError("No hay backend de embeddings disponible")
 
     # Calcular la similitud entre dos vectores de incrustación
     def calculate_similarity(
@@ -97,7 +126,11 @@ class AgentSelector:
 
 # Clase de gestión de agentes
 class AgentManager:
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: Dict[str, Any], verify: bool = True):
+        # verify=False omite la verificación exhaustiva de modelos (verify_models),
+        # que prueba cada modelo con una llamada real. Útil para arranques rápidos
+        # (p. ej. el servicio API), donde la selección usa clients/config y el
+        # fallback en tiempo de request cubre los modelos no disponibles.
         self.config = config
         self.specialized_assistants = config.get("specialized_assistants", [])
         self.agent_selector = AgentSelector(config, self.specialized_assistants)
@@ -115,8 +148,10 @@ class AgentManager:
             "default_model", "phi3.5:latest"
         )
         self.processing_priority = config.get("processing_priority", [])
-        self.default_agent = ("openrouter", config["deepinfra"]["default_model"])
-        self.backup_default_agent = ("deepinfra", config["openrouter"]["default_model"])
+        # Agente por defecto: Ollama Cloud (qwen3-coder:480b, top del benchmark
+        # all-around); respaldo: DeepSeek (deepseek-v4-flash).
+        self.default_agent = ("ollama_cloud", "qwen3-coder:480b")
+        self.backup_default_agent = ("deepseek", config["deepseek"]["default_model"])
         self.meta_analysis_model = config["evaluation_models"]["meta_analysis"]["model"]
         self.meta_analysis_api = config["evaluation_models"]["meta_analysis"]["api"]
 
@@ -128,6 +163,11 @@ class AgentManager:
         self.critical_analysis_prompts = self.critical_analysis_config.get(
             "prompts", {}
         )
+
+        # Mapa asistente especializado -> área del corpus jurídico (cedula360
+        # /api/legal). Reemplaza a los OpenAI Assistants: los expertos se sirven
+        # desde claude-for-legal-colombia vía /api/legal/ask, sin depender de OpenAI.
+        self.assistant_area_map = self._load_assistant_area_map()
 
         # Inicializar los clientes de API
         self.clients = {}
@@ -179,8 +219,16 @@ class AgentManager:
         if routellm_client:
             self.clients["routellm"] = routellm_client
 
+        ollama_cloud_client = self.init_ollama_cloud_client()
+        if ollama_cloud_client:
+            self.clients["ollama_cloud"] = ollama_cloud_client
+
+        minimax_client = self.init_minimax_client()
+        if minimax_client:
+            self.clients["minimax"] = minimax_client
+
         # Verificar modelos disponibles después de inicializar todos los clientes
-        self.available_models = self.verify_models()
+        self.available_models = self.verify_models() if verify else {}
 
     def get_specialized_assistant(self, assistant_id: str) -> Optional[Dict[str, Any]]:
         """
@@ -495,10 +543,12 @@ class AgentManager:
         if not prioritized_agents:
             specialized_agent = self.select_specialized_agent(query)
             if specialized_agent:
+                # agent_type "assistant" para que process_query lo despache a
+                # process_with_assistant (→ experto vía cedula360 /api/legal).
                 prioritized_agents.append(
-                    ("specialized", specialized_agent["id"], specialized_agent["name"])
+                    ("assistant", specialized_agent["id"], specialized_agent["name"])
                 )
-                used_agent_types.add("specialized")
+                used_agent_types.add("assistant")
 
         # Añadir agentes generales hasta tener un total de 3 agentes
         general_agents = self.get_general_agents(query, complexity, prompt_type)
@@ -511,19 +561,12 @@ class AgentManager:
                 used_agent_types.add(agent_type)
                 used_models.add(model)
 
-        # Si aún no tenemos 3 agentes, añadir agentes por defecto
+        # Si aún no tenemos 3 agentes, añadir agentes por defecto (Ollama Cloud
+        # como motor principal; DeepSeek y Mistral como respaldo).
         default_agents = [
-            ("groq", self.config["groq"]["default_model"], "Groq Default"),
-            (
-                "openrouter",
-                self.config["openrouter"]["default_model"],
-                "OpenRouter Default",
-            ),
-            (
-                "deepinfra",
-                self.config["deepinfra"]["default_model"],
-                "DeepInfra Default",
-            ),
+            ("ollama_cloud", self.config["ollama_cloud"]["default_model"], "Ollama Cloud Default"),
+            ("deepseek", self.config["deepseek"]["default_model"], "DeepSeek Default"),
+            ("mistral", self.config["mistral"]["default_model"], "Mistral Default"),
         ]
         for agent_type, model, name in default_agents:
             if len(prioritized_agents) >= 3:
@@ -533,6 +576,18 @@ class AgentManager:
                 used_agent_types.add(agent_type)
                 used_models.add(model)
 
+        # Reordenar respetando processing_priority (ollama_cloud primero), de forma
+        # estable: los agentes cuyo proveedor está antes en la prioridad van primero.
+        priority = self.config.get("processing_priority", [])
+
+        def _prio(agent):
+            at = agent[0]
+            try:
+                return priority.index(at)
+            except ValueError:
+                return len(priority) + 1
+
+        prioritized_agents.sort(key=_prio)
         return prioritized_agents[:3]
 
     def is_suitable_for_prompt_type(
@@ -597,11 +652,16 @@ class AgentManager:
 
     # Procesar la consulta con el agente seleccionado
     def init_client(self, client_name: str, client_class, api_key: str, **kwargs):
+        # Sin API key (p. ej. comentada en secrets.toml) -> no se inicializa el
+        # cliente, por lo que el proveedor queda como NO disponible.
+        if not api_key:
+            logging.info(f"{client_name}: sin API key, cliente no inicializado")
+            return None
         try:
             # Debug: check kwargs
             if 'proxies' in kwargs:
                 logging.warning(f"init_client for {client_name} received 'proxies' in kwargs")
-            
+
             return client_class(api_key=api_key, **kwargs)
         except TypeError as e:
             if "proxies" in str(e):
@@ -692,7 +752,7 @@ class AgentManager:
             try:
                 # Probar el cliente con un modelo gratuito verificado
                 client.chat.completions.create(
-                    model="meta-llama/llama-3.3-70b-instruct:free",
+                    model="google/gemma-4-31b-it:free",
                     messages=[{"role": "user", "content": "Test"}],
                     max_tokens=20,  # Mínimo 16 requerido por algunos backends (Azure)
                 )
@@ -742,6 +802,86 @@ class AgentManager:
             except Exception as e:
                 logging.error(f"Error checking RouteLLM API: {str(e)}")
         return None
+
+    # Inicializar el cliente de Ollama Cloud (OpenAI-compatible)
+    def init_ollama_cloud_client(self):
+        base_url = self.config.get("ollama_cloud", {}).get(
+            "base_url", "https://ollama.com/v1"
+        )
+        client = self.init_client(
+            "Ollama Cloud",
+            OpenAI,
+            get_secret("OLLAMA_CLOUD_API_KEY"),
+            base_url=base_url,
+        )
+        if client:
+            try:
+                # Probar el cliente con el modelo rápido por defecto
+                test_model = self.config.get("ollama_cloud", {}).get(
+                    "fast_model", "gpt-oss:20b"
+                )
+                client.chat.completions.create(
+                    model=test_model,
+                    messages=[{"role": "user", "content": "Test"}],
+                    max_tokens=20,
+                )
+                return client
+            except Exception as e:
+                logging.error(f"Error checking Ollama Cloud API: {str(e)}")
+        return None
+
+    # Inicializar el cliente de MiniMax (vía la API de cedula360)
+    def init_minimax_client(self):
+        # MiniMax multimodal se consume a través de cedula360 (/api/minimax/*),
+        # que habla con MiniMax por loopback. Requiere plan Enterprise/Despachos.
+        api_key = get_secret("CEDULA360_API_KEY")
+        if not api_key:
+            return None
+        base = (get_secret("CEDULA360_API_BASE") or "https://cedula360.tech/api").rstrip("/")
+        try:
+            r = requests.get(
+                f"{base}/minimax/usage",
+                headers={"X-API-Key": api_key},
+                timeout=15,
+            )
+            if r.status_code == 200:
+                logging.info(f"MiniMax (cedula360) disponible: {r.json()}")
+                return {"base": base, "key": api_key}
+            logging.warning(
+                f"MiniMax (cedula360) no disponible: HTTP {r.status_code} "
+                f"(¿plan sin acceso?)"
+            )
+        except Exception as e:
+            logging.error(f"Error checking MiniMax (cedula360): {str(e)}")
+        return None
+
+    def process_with_minimax(self, query: str, model: str = None) -> str:
+        try:
+            client = self.clients.get("minimax")
+            if not client:
+                return {"error": "Cliente de MiniMax (cedula360) no inicializado"}
+            payload = {"message": query}
+            if model and model != "MiniMax-M3":
+                payload["model"] = model
+            r = requests.post(
+                f"{client['base']}/minimax/chat",
+                headers={"X-API-Key": client["key"], "Content-Type": "application/json"},
+                json=payload,
+                timeout=120,
+            )
+            if r.status_code == 403:
+                return "Error: MiniMax requiere plan Enterprise/Despachos en cedula360"
+            if r.status_code != 200:
+                return f"Error al procesar con MiniMax: HTTP {r.status_code}"
+            data = r.json()
+            text = (data.get("stdout") or "").strip()
+            if not text:
+                err = data.get("provider_error") or data.get("stderr")
+                return f"Error de MiniMax: {err}" if err else "Error: respuesta vacía de MiniMax"
+            return text
+        except Exception as e:
+            logging.error(f"Error al procesar con MiniMax (cedula360): {str(e)}")
+            return f"Error al procesar con MiniMax: {str(e)}"
 
     # Procesar la consulta con el agente seleccionado
     def get_ollama_models(self) -> List[str]:
@@ -1071,9 +1211,27 @@ class AgentManager:
             return f"Error al procesar con Anthropic API: {str(e)}"
 
     def process_with_deepseek(self, query: str, model: str) -> str:
-        return self._process_with_openai_like_client(
-            self.clients["deepseek"], query, model
-        )
+        # DeepSeek v4 (flash/pro) y deepseek-reasoner usan "thinking mode": el
+        # razonamiento consume tokens y puede dejar content vacío con max_tokens
+        # bajo. Se da margen y se cae a reasoning_content si content viene vacío.
+        try:
+            client = self.clients.get("deepseek")
+            if not client:
+                return {"error": "Cliente de DeepSeek no inicializado"}
+            resp = client.chat.completions.create(
+                model=model,
+                messages=[{"role": "user", "content": query}],
+                temperature=self.config["general"]["temperature"],
+                max_tokens=max(self.config["general"].get("max_tokens", 1000), 4000),
+            )
+            msg = resp.choices[0].message
+            content = (msg.content or "").strip()
+            if not content:
+                content = (getattr(msg, "reasoning_content", None) or "").strip()
+            return content or "Error: respuesta vacía de DeepSeek"
+        except Exception as e:  # noqa: BLE001
+            logging.error(f"Error al procesar con DeepSeek: {str(e)}")
+            return f"Error al procesar con DeepSeek: {str(e)}"
 
     def process_with_mistral(self, query: str, model: str) -> str:
         chat_response = self.clients["mistral"].chat.complete(
@@ -1118,7 +1276,66 @@ class AgentManager:
             self.clients["openai"], query, model
         )
 
+    def _load_assistant_area_map(self) -> Dict[str, str]:
+        """Carga tools/assistants_map.yaml → {assistant_id: area}."""
+        import os as _os
+        path = _os.path.join(
+            _os.path.dirname(_os.path.abspath(__file__)), "tools", "assistants_map.yaml"
+        )
+        try:
+            import yaml as _yaml
+            data = _yaml.safe_load(open(path))
+            return {
+                aid: (info or {}).get("area")
+                for aid, info in (data.get("asistentes", {}) or {}).items()
+                if (info or {}).get("area")
+            }
+        except Exception as e:  # noqa: BLE001
+            logging.warning(f"No se pudo cargar assistants_map.yaml: {e}")
+            return {}
+
+    def process_with_cedula360_legal(self, area: str, query: str) -> str:
+        """Procesa una consulta de un experto vía la API legal de cedula360.
+
+        Sustituye a los OpenAI Assistants: el experto se sirve desde
+        claude-for-legal-colombia (Mentor RAG por área) a través de
+        POST {CEDULA360_API_BASE}/legal/ask. Requiere plan Business+.
+        """
+        try:
+            api_key = get_secret("CEDULA360_API_KEY")
+            if not api_key:
+                return {"error": "CEDULA360_API_KEY no configurada"}
+            base = (get_secret("CEDULA360_API_BASE") or "https://cedula360.tech/api").rstrip("/")
+            r = requests.post(
+                f"{base}/legal/ask",
+                headers={"X-API-Key": api_key, "Content-Type": "application/json"},
+                json={"pregunta": query, "area": area},
+                timeout=150,
+            )
+            if r.status_code == 403:
+                return "Error: /api/legal requiere plan Business+ en cedula360"
+            if r.status_code != 200:
+                return f"Error al procesar con cedula360 legal: HTTP {r.status_code}"
+            data = r.json()
+            resp = (data.get("respuesta") or "").strip()
+            return resp or (data.get("error") or "Error: respuesta vacía del Mentor legal")
+        except Exception as e:  # noqa: BLE001
+            logging.error(f"Error al procesar con cedula360 legal (area={area}): {str(e)}")
+            return f"Error al procesar con cedula360 legal: {str(e)}"
+
     def process_with_assistant(self, assistant_id: str, query: str) -> str:
+        # Los expertos ya no usan OpenAI: se redirigen al Mentor jurídico
+        # colombiano vía cedula360 /api/legal/ask, según su área mapeada.
+        area = self.assistant_area_map.get(assistant_id)
+        if area:
+            return self.process_with_cedula360_legal(area, query)
+        # Sin área mapeada: si OpenAI está disponible, usar el Assistant clásico;
+        # si no, degradar a un modelo activo con el contexto disponible.
+        if not self.clients.get("openai"):
+            logging.warning(
+                f"Asistente {assistant_id} sin área ni OpenAI; usando área 'general'"
+            )
+            return self.process_with_cedula360_legal("general", query)
         try:
             thread = self.clients["openai"].beta.threads.create()
             self.clients["openai"].beta.threads.messages.create(
@@ -1192,7 +1409,7 @@ class AgentManager:
 
                 # Si no se encuentra, usar un modelo por defecto seguro
                 if not found:
-                    model = "meta-llama/llama-3.3-70b-instruct:free"
+                    model = "google/gemma-4-31b-it:free"
                     logging.warning(
                         f"Modelo no encontrado en la configuración, usando modelo por defecto: {model}"
                     )
@@ -1247,6 +1464,65 @@ class AgentManager:
             logging.error(f"Error al procesar con OpenRouter API: {str(e)}")
             return f"Error al procesar con OpenRouter API: {str(e)}"
 
+    def process_with_ollama_cloud(self, query: str, model: str) -> str:
+        try:
+            if not self.clients.get("ollama_cloud"):
+                logging.warning("Cliente de Ollama Cloud no inicializado")
+                return {"error": "Cliente de Ollama Cloud no inicializado"}
+
+            cloud_config = self.config.get("ollama_cloud", {})
+            # Validar que el modelo exista en la configuración; si no, usar el default
+            valid_models = [
+                m["name"]
+                for m in cloud_config.get("models", [])
+                if isinstance(m, dict) and "name" in m
+            ]
+            if model not in valid_models:
+                fallback = cloud_config.get("default_model", "gpt-oss:120b")
+                logging.warning(
+                    f"Modelo '{model}' no está en ollama_cloud, usando default: {fallback}"
+                )
+                model = fallback
+
+            params = {
+                "model": model,
+                "messages": [{"role": "user", "content": query}],
+                "temperature": cloud_config.get(
+                    "temperature", self.config["general"]["temperature"]
+                ),
+                "max_tokens": cloud_config.get(
+                    "max_tokens", self.config["general"]["max_tokens"]
+                ),
+            }
+
+            response = self.clients["ollama_cloud"].chat.completions.create(**params)
+
+            if not response.choices:
+                logging.warning(f"Ollama Cloud response sin choices: {response}")
+                return "Error: Respuesta sin opciones de Ollama Cloud"
+
+            message = response.choices[0].message
+            content = message.content
+
+            # Modelos con "thinking mode" (gpt-oss, glm, deepseek) pueden devolver
+            # content vacío y el razonamiento en un campo separado.
+            if not content or content.strip() == "":
+                reasoning = getattr(message, "reasoning", None) or getattr(
+                    message, "thinking", None
+                )
+                if reasoning:
+                    logging.info("Ollama Cloud: usando campo reasoning/thinking como contenido")
+                    content = reasoning
+                else:
+                    logging.warning(f"Ollama Cloud respuesta vacía: {response}")
+                    return "Error: Respuesta vacía de Ollama Cloud"
+
+            return content
+
+        except Exception as e:
+            logging.error(f"Error al procesar con Ollama Cloud API: {str(e)}")
+            return f"Error al procesar con Ollama Cloud API: {str(e)}"
+
     def _process_with_openai_like_client(self, client, query: str, model: str) -> str:
         try:
             # Parámetros base
@@ -1286,22 +1562,17 @@ class AgentManager:
             f"Web Context:\n{web_context}\n\nModel Responses:\n{aggregated_results}"
         )
 
-        aggregator_response = self.clients["together"].chat.completions.create(
-            model=self.config["moa"]["aggregator_model"],
-            messages=[
-                {
-                    "role": "system",
-                    "content": self.config["moa"]["aggregator_system_prompt"],
-                },
-                {
-                    "role": "user",
-                    "content": f"Query: {query}\n\nContext:\n{full_context}",
-                },
-            ],
-            temperature=self.config["general"]["temperature"],
-            max_tokens=self.config["general"]["max_tokens"],
+        # Agregador sobre Ollama Cloud (config moa.api / moa.aggregator_model).
+        moa_api = self.config["moa"].get("api", "ollama_cloud")
+        aggregator_model = self.config["moa"]["aggregator_model"]
+        aggregator_prompt = (
+            f"{self.config['moa']['aggregator_system_prompt']}\n\n"
+            f"Query: {query}\n\nContext:\n{full_context}"
         )
-        return aggregator_response.choices[0].message.content
+        process = getattr(self, f"process_with_{moa_api}", None)
+        if process:
+            return process(aggregator_prompt, aggregator_model)
+        return self.process_with_ollama_cloud(aggregator_prompt, aggregator_model)
 
     def meta_analysis(
         self,
@@ -1357,12 +1628,17 @@ class AgentManager:
         return "No se pudo realizar el meta-análisis debido a múltiples errores en los modelos configurados."
 
     async def run_multiple_models(self, query: str) -> List[str]:
-        async def run_model(model):
-            return self.process_with_together(query, model)
+        # Propuestas del MOA sobre Ollama Cloud (moa.proposal_models del benchmark).
+        moa_api = self.config["moa"].get("api", "ollama_cloud")
+        proposal_models = self.config["moa"].get("proposal_models", [])
+        process = getattr(self, f"process_with_{moa_api}", self.process_with_ollama_cloud)
 
-        tasks = [run_model(model) for model in self.together_models]
-        results = await asyncio.gather(*tasks)
-        return results
+        async def run_model(model):
+            return await asyncio.to_thread(process, query, model)
+
+        tasks = [run_model(model) for model in proposal_models]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        return [r for r in results if isinstance(r, str) and r and not r.startswith("Error")]
 
     def internet_available(self, host="8.8.8.8", port=53, timeout=3):
         try:

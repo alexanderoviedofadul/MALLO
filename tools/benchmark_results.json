@@ -1,0 +1,314 @@
+{
+  "general": {
+    "cascada_ollama_cloud": [
+      "gpt-oss:120b",
+      "mistral-large-3:675b",
+      "gpt-oss:20b"
+    ],
+    "fallback_deepseek": null,
+    "ranking": [
+      {
+        "provider": "ollama_cloud",
+        "model": "gpt-oss:120b",
+        "score": 100,
+        "latency": 1.61,
+        "combined": 99.5
+      },
+      {
+        "provider": "ollama_cloud",
+        "model": "mistral-large-3:675b",
+        "score": 96,
+        "latency": 4.38,
+        "combined": 94.7
+      },
+      {
+        "provider": "ollama_cloud",
+        "model": "gpt-oss:20b",
+        "score": 95,
+        "latency": 3.55,
+        "combined": 93.9
+      },
+      {
+        "provider": "ollama_cloud",
+        "model": "glm-5.2",
+        "score": 96,
+        "latency": 9.22,
+        "combined": 93.2
+      },
+      {
+        "provider": "ollama_cloud",
+        "model": "gemma4:31b",
+        "score": 85,
+        "latency": 1.95,
+        "combined": 84.4
+      },
+      {
+        "provider": "ollama_cloud",
+        "model": "minimax-m3",
+        "score": 60,
+        "latency": 9.12,
+        "combined": 57.3
+      }
+    ]
+  },
+  "coding": {
+    "cascada_ollama_cloud": [
+      "gemma4:31b",
+      "gpt-oss:20b",
+      "glm-5.2"
+    ],
+    "fallback_deepseek": null,
+    "ranking": [
+      {
+        "provider": "ollama_cloud",
+        "model": "gemma4:31b",
+        "score": 100,
+        "latency": 1.43,
+        "combined": 99.6
+      },
+      {
+        "provider": "ollama_cloud",
+        "model": "gpt-oss:20b",
+        "score": 100,
+        "latency": 10.14,
+        "combined": 97.0
+      },
+      {
+        "provider": "ollama_cloud",
+        "model": "glm-5.2",
+        "score": 95,
+        "latency": 9.5,
+        "combined": 92.2
+      },
+      {
+        "provider": "ollama_cloud",
+        "model": "gpt-oss:120b",
+        "score": 70,
+        "latency": 1.37,
+        "combined": 69.6
+      },
+      {
+        "provider": "ollama_cloud",
+        "model": "minimax-m3",
+        "score": 70,
+        "latency": 17.76,
+        "combined": 64.7
+      },
+      {
+        "provider": "ollama_cloud",
+        "model": "mistral-large-3:675b",
+        "score": 60,
+        "latency": 3.54,
+        "combined": 58.9
+      }
+    ]
+  },
+  "reasoning": {
+    "cascada_ollama_cloud": [
+      "gpt-oss:120b",
+      "gemma4:31b",
+      "mistral-large-3:675b"
+    ],
+    "fallback_deepseek": null,
+    "ranking": [
+      {
+        "provider": "ollama_cloud",
+        "model": "gpt-oss:120b",
+        "score": 100,
+        "latency": 1.68,
+        "combined": 99.5
+      },
+      {
+        "provider": "ollama_cloud",
+        "model": "gemma4:31b",
+        "score": 100,
+        "latency": 2.04,
+        "combined": 99.4
+      },
+      {
+        "provider": "ollama_cloud",
+        "model": "mistral-large-3:675b",
+        "score": 100,
+        "latency": 3.75,
+        "combined": 98.9
+      },
+      {
+        "provider": "ollama_cloud",
+        "model": "gpt-oss:20b",
+        "score": 100,
+        "latency": 5.98,
+        "combined": 98.2
+      },
+      {
+        "provider": "ollama_cloud",
+        "model": "glm-5.2",
+        "score": 100,
+        "latency": 6.56,
+        "combined": 98.0
+      },
+      {
+        "provider": "ollama_cloud",
+        "model": "minimax-m3",
+        "score": 95,
+        "latency": 6.98,
+        "combined": 92.9
+      }
+    ]
+  },
+  "math": {
+    "cascada_ollama_cloud": [
+      "gemma4:31b",
+      "gpt-oss:120b",
+      "minimax-m3"
+    ],
+    "fallback_deepseek": null,
+    "ranking": [
+      {
+        "provider": "ollama_cloud",
+        "model": "gemma4:31b",
+        "score": 100,
+        "latency": 1.66,
+        "combined": 99.5
+      },
+      {
+        "provider": "ollama_cloud",
+        "model": "gpt-oss:120b",
+        "score": 100,
+        "latency": 1.98,
+        "combined": 99.4
+      },
+      {
+        "provider": "ollama_cloud",
+        "model": "minimax-m3",
+        "score": 100,
+        "latency": 6.99,
+        "combined": 97.9
+      },
+      {
+        "provider": "ollama_cloud",
+        "model": "gpt-oss:20b",
+        "score": 100,
+        "latency": 7.92,
+        "combined": 97.6
+      },
+      {
+        "provider": "ollama_cloud",
+        "model": "mistral-large-3:675b",
+        "score": 96,
+        "latency": 5.42,
+        "combined": 94.4
+      },
+      {
+        "provider": "ollama_cloud",
+        "model": "glm-5.2",
+        "score": 100,
+        "latency": 20.81,
+        "combined": 93.8
+      }
+    ]
+  },
+  "summary": {
+    "cascada_ollama_cloud": [
+      "mistral-large-3:675b",
+      "glm-5.2",
+      "minimax-m3"
+    ],
+    "fallback_deepseek": null,
+    "ranking": [
+      {
+        "provider": "ollama_cloud",
+        "model": "mistral-large-3:675b",
+        "score": 100,
+        "latency": 1.63,
+        "combined": 99.5
+      },
+      {
+        "provider": "ollama_cloud",
+        "model": "glm-5.2",
+        "score": 100,
+        "latency": 11.29,
+        "combined": 96.6
+      },
+      {
+        "provider": "ollama_cloud",
+        "model": "minimax-m3",
+        "score": 100,
+        "latency": 14.19,
+        "combined": 95.7
+      },
+      {
+        "provider": "ollama_cloud",
+        "model": "gpt-oss:120b",
+        "score": 95,
+        "latency": 1.57,
+        "combined": 94.5
+      },
+      {
+        "provider": "ollama_cloud",
+        "model": "gemma4:31b",
+        "score": 80,
+        "latency": 0.59,
+        "combined": 79.8
+      },
+      {
+        "provider": "ollama_cloud",
+        "model": "gpt-oss:20b",
+        "score": 60,
+        "latency": 3.43,
+        "combined": 59.0
+      }
+    ]
+  },
+  "classify": {
+    "cascada_ollama_cloud": [
+      "gemma4:31b",
+      "mistral-large-3:675b",
+      "gpt-oss:20b"
+    ],
+    "fallback_deepseek": null,
+    "ranking": [
+      {
+        "provider": "ollama_cloud",
+        "model": "gemma4:31b",
+        "score": 100,
+        "latency": 0.35,
+        "combined": 99.9
+      },
+      {
+        "provider": "ollama_cloud",
+        "model": "mistral-large-3:675b",
+        "score": 100,
+        "latency": 0.65,
+        "combined": 99.8
+      },
+      {
+        "provider": "ollama_cloud",
+        "model": "gpt-oss:20b",
+        "score": 100,
+        "latency": 1.14,
+        "combined": 99.7
+      },
+      {
+        "provider": "ollama_cloud",
+        "model": "minimax-m3",
+        "score": 100,
+        "latency": 1.31,
+        "combined": 99.6
+      },
+      {
+        "provider": "ollama_cloud",
+        "model": "glm-5.2",
+        "score": 100,
+        "latency": 2.7,
+        "combined": 99.2
+      },
+      {
+        "provider": "ollama_cloud",
+        "model": "gpt-oss:120b",
+        "score": 30,
+        "latency": 1.41,
+        "combined": 29.6
+      }
+    ]
+  }
+}
