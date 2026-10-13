@@ -145,13 +145,21 @@ class AgentManager:
         self.available_models = {}  # Se inicializará después de los clientes
         self.reliable_models = []
         self.default_local_model = config["ollama"].get(
-            "default_model", "phi3.5:latest"
+            "default_model", "gemma3:latest"
         )
         self.processing_priority = config.get("processing_priority", [])
-        # Agente por defecto: Ollama Cloud (qwen3-coder:480b, top del benchmark
-        # all-around); respaldo: DeepSeek (deepseek-v4-flash).
-        self.default_agent = ("ollama_cloud", "qwen3-coder:480b")
-        self.backup_default_agent = ("deepseek", config["deepseek"]["default_model"])
+        # Agente por defecto: el default_model de Ollama Cloud; respaldo: el primero
+        # de la cascada `fallback_agents` (config.yaml). Antes estaban fijados aquí
+        # (qwen3-coder:480b, retirado, y DeepSeek, cuya clave ya no vale).
+        self.default_agent = ("ollama_cloud", config["ollama_cloud"]["default_model"])
+        self.fallback_agents = [
+            tuple(str(a).split(":", 1)) for a in config.get("fallback_agents", []) or []
+            if ":" in str(a)
+        ]
+        self.backup_default_agent = (
+            self.fallback_agents[0] if self.fallback_agents
+            else ("mistral", config["mistral"]["default_model"])
+        )
         self.meta_analysis_model = config["evaluation_models"]["meta_analysis"]["model"]
         self.meta_analysis_api = config["evaluation_models"]["meta_analysis"]["api"]
 
@@ -169,63 +177,36 @@ class AgentManager:
         # desde claude-for-legal-colombia vía /api/legal/ask, sin depender de OpenAI.
         self.assistant_area_map = self._load_assistant_area_map()
 
-        # Inicializar los clientes de API
+        # Inicializar los clientes de API. Los proveedores de `disabled_providers`
+        # (config.yaml) NO se inicializan ni se comprueban: su clave puede seguir en
+        # secrets.toml, pero el arranque no los intenta (2026-10-04: solo quedan
+        # activas las APIs que respondieron a una llamada real).
         self.clients = {}
-
-        # Inicializar cliente de OpenAI (API)
-        openai_client = self.init_openai_client()
-        if openai_client:
-            self.clients["openai"] = openai_client
-            self.clients["api"] = openai_client  # Alias para compatibilidad
-
-        # Inicializar otros clientes
-        together_client = self.init_together_client()
-        if together_client:
-            self.clients["together"] = together_client
-
-        groq_client = self.init_groq_client()
-        if groq_client:
-            self.clients["groq"] = groq_client
-
-        deepinfra_client = self.init_deepinfra_client()
-        if deepinfra_client:
-            self.clients["deepinfra"] = deepinfra_client
-
-        anthropic_client = self.init_anthropic_client()
-        if anthropic_client:
-            self.clients["anthropic"] = anthropic_client
-
-        deepseek_client = self.init_deepseek_client()
-        if deepseek_client:
-            self.clients["deepseek"] = deepseek_client
-
-        mistral_client = self.init_mistral_client()
-        if mistral_client:
-            self.clients["mistral"] = mistral_client
-
-        cohere_client = self.init_cohere_client()
-        if cohere_client:
-            self.clients["cohere"] = cohere_client
-
-        openrouter_client = self.init_openrouter_client()
-        if openrouter_client:
-            self.clients["openrouter"] = openrouter_client
-
-        z_ai_client = self.init_z_ai_client()
-        if z_ai_client:
-            self.clients["z-ai"] = z_ai_client
-
-        routellm_client = self.init_routellm_client()
-        if routellm_client:
-            self.clients["routellm"] = routellm_client
-
-        ollama_cloud_client = self.init_ollama_cloud_client()
-        if ollama_cloud_client:
-            self.clients["ollama_cloud"] = ollama_cloud_client
-
-        minimax_client = self.init_minimax_client()
-        if minimax_client:
-            self.clients["minimax"] = minimax_client
+        self.disabled_providers = set(config.get("disabled_providers", []) or [])
+        inicializadores = [
+            ("openai", self.init_openai_client),
+            ("together", self.init_together_client),
+            ("groq", self.init_groq_client),
+            ("deepinfra", self.init_deepinfra_client),
+            ("anthropic", self.init_anthropic_client),
+            ("deepseek", self.init_deepseek_client),
+            ("mistral", self.init_mistral_client),
+            ("cohere", self.init_cohere_client),
+            ("openrouter", self.init_openrouter_client),
+            ("z-ai", self.init_z_ai_client),
+            ("routellm", self.init_routellm_client),
+            ("ollama_cloud", self.init_ollama_cloud_client),
+            ("minimax", self.init_minimax_client),
+        ]
+        for nombre, iniciar in inicializadores:
+            if nombre in self.disabled_providers:
+                logging.info(f"{nombre}: desactivado en config.yaml (disabled_providers); no se inicializa")
+                continue
+            cliente = iniciar()
+            if cliente:
+                self.clients[nombre] = cliente
+                if nombre == "openai":
+                    self.clients["api"] = cliente  # Alias para compatibilidad
 
         # Verificar modelos disponibles después de inicializar todos los clientes
         self.available_models = self.verify_models() if verify else {}
@@ -251,6 +232,10 @@ class AgentManager:
     ) -> List[Tuple[str, str, str]]:
         general_agents = []
         for api, config in self.config.items():
+            # Solo proveedores con cliente activo (la sección "ollama" no es un
+            # agent_type despachable: el local se usa como último recurso).
+            if api == "ollama" or not self.proveedor_disponible(api):
+                continue
             if isinstance(config, dict) and "models" in config:
                 for model in config["models"]:
                     if (
@@ -344,16 +329,16 @@ class AgentManager:
         Justificación: [tu justificación]
         """
 
-        response = self.clients["cohere"].generate(
-            model=self.config["agent_selection"]["validation_model"],
-            prompt=validation_prompt,
-            max_tokens=300,
-            temperature=0.7,
-        )
+        # Antes: Cohere fijo (clients["cohere"].generate), que no está activo.
+        # Ahora: "api:modelo" de agent_selection.validation_model (config.yaml).
+        api, _, modelo = str(self.config["agent_selection"]["validation_model"]).partition(":")
+        try:
+            texto = self.process_query(validation_prompt, api, modelo)
+        except Exception as e:  # noqa: BLE001
+            logging.warning(f"Validación de agente no disponible ({e}); se mantiene {initial_agent}")
+            return initial_agent
 
-        recommended_agent, confidence = self.extract_recommendation(
-            response.generations[0].text
-        )
+        recommended_agent, confidence = self.extract_recommendation(texto)
 
         return recommended_agent if confidence == "alta" else initial_agent
 
@@ -469,11 +454,14 @@ class AgentManager:
         Justificación: [tu justificación]
         """
 
-        response = self.process_query(
-            validation_prompt,
-            config["default_model"].split(":")[0],
-            config["default_model"].split(":")[1],
-        )
+        # "api:modelo" — se parte solo en el primer ":" (los nombres de Ollama
+        # llevan ":" propio, p. ej. ollama_cloud:gpt-oss:20b).
+        api, _, modelo = str(config["default_model"]).partition(":")
+        try:
+            response = self.process_query(validation_prompt, api, modelo)
+        except Exception as e:  # noqa: BLE001
+            logging.warning(f"Validación de tipo de prompt no disponible ({e}); se mantiene {initial_type}")
+            return initial_type
 
         # Extraer el tipo recomendado y la confianza de la respuesta
         recommended_type, confidence = self.extract_recommendation(response)
@@ -486,6 +474,9 @@ class AgentManager:
 
     # Extraer la recomendación y la confianza de la respuesta generada
     def extract_recommendation(self, response: str) -> Tuple[str, str]:
+        # Varios modelos contestan en Markdown («**Tipo recomendado:** legal»): sin
+        # quitar los asteriscos el patrón no casaba y se perdía la recomendación.
+        response = (response or "").replace("*", "").replace("`", "")
         # Extraer el tipo recomendado
         type_match = re.search(r"Tipo recomendado:\s*(\w+)", response)
         recommended_type = type_match.group(1) if type_match else "default"
@@ -510,6 +501,8 @@ class AgentManager:
         def find_specialized_models(prompt_type):
             specialized_models = []
             for api, config in self.config.items():
+                if api == "ollama" or not self.proveedor_disponible(api):
+                    continue
                 if isinstance(config, dict) and "models" in config:
                     for model in config["models"]:
                         if (
@@ -530,8 +523,38 @@ class AgentManager:
                                 )
             return specialized_models
 
-        # Primero, intentar seleccionar un modelo especializado para el prompt_type
-        specialized_models = find_specialized_models(prompt_type)
+        # 1) Modelo elegido por tarea (`task_models` en config.yaml, medido con
+        #    prompts reales de MALLO; ver docs/MODELOS-OLLAMA-CLOUD-POR-FLUJO-2026-10-04.md).
+        #    Se toma el primero disponible de la cascada del tipo de consulta.
+        task_models = self.config.get("task_models", {}) or {}
+        por_tarea = False
+        # Tipos sin cascada propia (incluido "default", que es lo que devuelve el
+        # clasificador por palabras clave casi siempre): primero el experto
+        # jurídico si las palabras clave lo señalan, luego la cascada general.
+        cascada = task_models.get(prompt_type) or (["assistant:auto"] + list(task_models.get("general") or []))
+        for entrada in cascada:
+            if len(prioritized_agents) >= 3:
+                break
+            agent_type, _, model = str(entrada).partition(":")
+            if agent_type in used_agent_types:
+                continue  # un agente por proveedor, como en el resto de la selección
+            if agent_type == "assistant" and model == "auto":
+                # Experto jurídico (cedula360 /api/legal) elegido por palabras clave.
+                experto = self.select_specialized_agent(query) if self.proveedor_disponible("assistant") else None
+                if experto:
+                    prioritized_agents.append(("assistant", experto["id"], experto["name"]))
+                    used_agent_types.add("assistant")
+                continue
+            if model and self.proveedor_disponible(agent_type):
+                prioritized_agents.append(
+                    (agent_type, model, f"{agent_type.capitalize()} {model} ({prompt_type})")
+                )
+                used_agent_types.add(agent_type)
+                used_models.add(model)
+                por_tarea = True
+
+        # 2) Si no hay modelo por tarea, el primero de config.yaml que declare ese prompt_type
+        specialized_models = find_specialized_models(prompt_type) if not prioritized_agents else []
         for agent_type, model, name in specialized_models:
             if agent_type not in used_agent_types and model not in used_models:
                 prioritized_agents.append((agent_type, model, name))
@@ -550,8 +573,9 @@ class AgentManager:
                 )
                 used_agent_types.add("assistant")
 
-        # Añadir agentes generales hasta tener un total de 3 agentes
-        general_agents = self.get_general_agents(query, complexity, prompt_type)
+        # Añadir agentes generales hasta tener un total de 3 agentes (solo si no hay
+        # cascada por tarea: su orden es aleatorio y desplazaría a la elegida).
+        general_agents = [] if por_tarea else self.get_general_agents(query, complexity, prompt_type)
         for agent in general_agents:
             if len(prioritized_agents) >= 3:
                 break
@@ -562,15 +586,15 @@ class AgentManager:
                 used_models.add(model)
 
         # Si aún no tenemos 3 agentes, añadir agentes por defecto (Ollama Cloud
-        # como motor principal; DeepSeek y Mistral como respaldo).
+        # como motor principal y la cascada `fallback_agents` como respaldo).
         default_agents = [
             ("ollama_cloud", self.config["ollama_cloud"]["default_model"], "Ollama Cloud Default"),
-            ("deepseek", self.config["deepseek"]["default_model"], "DeepSeek Default"),
-            ("mistral", self.config["mistral"]["default_model"], "Mistral Default"),
-        ]
+        ] + [(a, m, f"{a.capitalize()} {m} (respaldo)") for a, m in self.fallback_agents]
         for agent_type, model, name in default_agents:
             if len(prioritized_agents) >= 3:
                 break
+            if not self.proveedor_disponible(agent_type) or agent_type == "local":
+                continue
             if agent_type not in used_agent_types and model not in used_models:
                 prioritized_agents.append((agent_type, model, name))
                 used_agent_types.add(agent_type)
@@ -887,7 +911,7 @@ class AgentManager:
     def get_ollama_models(self) -> List[str]:
         try:
             response = requests.get(
-                f"{self.config['ollama']['base_url']}/api/tags", timeout=5
+                f"{self.config['ollama']['base_url'].rstrip('/')}/api/tags", timeout=5
             )
             if response.status_code == 200:
                 return [model["name"] for model in response.json()["models"]]
@@ -1055,8 +1079,10 @@ class AgentManager:
         agent_id: str,
         prompt_type: str = None,
         fallback_attempts: int = 0,
+        _probados=None,
     ) -> str:
         start_time = time.time()
+        _probados = set(_probados or set())
         max_fallback_attempts = (
             3  # Número máximo de intentos de fallback antes de abortar
         )
@@ -1128,17 +1154,20 @@ class AgentManager:
 
             # Intentar con agente de respaldo si no se ha alcanzado el límite de intentos
             if fallback_attempts < max_fallback_attempts:
-                fallback_agent, fallback_model = self.get_fallback_agent()
-                if fallback_agent != agent_type or fallback_model != agent_id:
+                _probados.add((agent_type, agent_id if isinstance(agent_id, str) else str(agent_id)))
+                fallback_agent, fallback_model = self.get_fallback_agent(_probados)
+                if (fallback_agent, fallback_model) not in _probados:
                     logging.info(
                         f"Attempting fallback with {fallback_agent}:{fallback_model}"
                     )
+                    # El prompt especializado ya va dentro de `query`: no se reaplica.
                     return self.process_query(
                         query,
                         fallback_agent,
                         fallback_model,
-                        prompt_type,
+                        None,
                         fallback_attempts + 1,
+                        _probados,
                     )
                 else:
                     logging.error(
@@ -1163,19 +1192,28 @@ class AgentManager:
     def should_use_moa(self, query: str, complexity: float) -> bool:
         return complexity > self.moa_threshold
 
-    def get_fallback_agent(self) -> Tuple[str, str]:
-        if self.clients.get("openrouter"):
-            return "openrouter", self.config["openrouter"]["default_model"]
-        elif self.clients.get("groq"):
-            return "groq", self.config["groq"]["default_model"]
-        elif self.clients.get("deepseek"):
-            return "deepseek", self.config["deepseek"]["default_model"]
-        elif self.clients.get("openai"):
-            return "api", self.config["openai"]["default_model"]
-        elif self.clients.get("together"):
-            return "together", self.config["together"]["default_model"]
-        else:
-            return "local", self.config["ollama"]["default_model"]
+    def proveedor_disponible(self, agent_type: str) -> bool:
+        """True si el proveedor puede atender ahora: cliente inicializado (y no
+        desactivado), el experto vía cedula360 ("assistant") o el Ollama local."""
+        if agent_type in self.disabled_providers:
+            return False
+        if agent_type == "assistant":
+            return bool(get_secret("CEDULA360_API_KEY"))
+        if agent_type in ("local", "ollama"):
+            return "ollama" not in self.disabled_providers
+        if agent_type == "openai":
+            return bool(self.clients.get("api") or self.clients.get("openai"))
+        return bool(self.clients.get(agent_type))
+
+    def get_fallback_agent(self, exclude=None) -> Tuple[str, str]:
+        """Siguiente agente de la cascada `fallback_agents` (config.yaml) que esté
+        disponible y no se haya probado ya. Último recurso: el modelo local."""
+        exclude = set(exclude or [])
+        for agent_type, model in self.fallback_agents:
+            if (agent_type, model) in exclude or not self.proveedor_disponible(agent_type):
+                continue
+            return agent_type, model
+        return "local", self.config["ollama"]["default_model"]
 
     def get_next_reliable_model(self, current_model: str) -> Optional[str]:
         try:
@@ -1261,9 +1299,10 @@ class AgentManager:
 
     def process_with_local_model(self, query: str, model: str) -> str:
         try:
-            url = f"{self.config['ollama']['base_url']}/api/generate"
+            url = f"{self.config['ollama']['base_url'].rstrip('/')}/api/generate"
             payload = {"model": model, "prompt": query, "stream": False}
-            response = requests.post(url, json=payload, timeout=30)
+            # Último recurso en CPU: gemma3 tarda decenas de segundos con carga.
+            response = requests.post(url, json=payload, timeout=120)
             response.raise_for_status()
             return response.json()["response"]
         except Exception as e:
@@ -1633,8 +1672,14 @@ class AgentManager:
         proposal_models = self.config["moa"].get("proposal_models", [])
         process = getattr(self, f"process_with_{moa_api}", self.process_with_ollama_cloud)
 
+        # La cuenta de Ollama Cloud limita las peticiones simultáneas («too many
+        # concurrent requests»): las propuestas van de una en una salvo que
+        # moa.max_concurrency diga otra cosa.
+        sem = asyncio.Semaphore(int(self.config["moa"].get("max_concurrency", 1) or 1))
+
         async def run_model(model):
-            return await asyncio.to_thread(process, query, model)
+            async with sem:
+                return await asyncio.to_thread(process, query, model)
 
         tasks = [run_model(model) for model in proposal_models]
         results = await asyncio.gather(*tasks, return_exceptions=True)

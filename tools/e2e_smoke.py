@@ -53,11 +53,17 @@ r = get("/v1/models", H_C360)
 check("/v1/models con key cedula360", r.status_code == 200)
 
 print("\n=== 2. Chat por proveedor activo ===")
-for prov, model in [("ollama_cloud", "qwen3-coder:480b"), ("deepseek", "deepseek-v4-flash"),
-                    ("mistral", "mistral-small-latest"), ("minimax", "MiniMax-M3")]:
+import yaml  # noqa: E402
+_cfg = yaml.safe_load(open(_os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "config.yaml")))
+for prov in ("ollama_cloud", "mistral", "minimax"):
+    model = _cfg[prov]["default_model"]
     r = post("/v1/chat", H_MALLO, {"query": "di OK en una palabra", "provider": prov, "model": model}, 90)
     resp = r.json().get("response", "") if r.status_code == 200 else r.text[:60]
-    check(f"chat {prov}", r.status_code == 200 and bool(resp), resp[:40])
+    check(f"chat {prov}:{model}", r.status_code == 200 and bool(resp), resp[:40])
+# Control negativo: un proveedor de disabled_providers no se inicializa → 400.
+for prov in _cfg.get("disabled_providers", [])[:2]:
+    r = post("/v1/chat", H_MALLO, {"query": "di OK", "provider": prov, "model": _cfg[prov]["default_model"]}, 30)
+    check(f"{prov} desactivado → 400", r.status_code == 400, r.text[:60])
 
 print("\n=== 3. Streaming SSE ===")
 deltas = 0

@@ -26,7 +26,7 @@ import time
 import logging
 import traceback
 import requests
-from typing import Tuple, Dict, Any
+from typing import Tuple, Dict, Any, Optional
 from load_secrets import load_secrets, get_secret
 
 # Configuración de logging
@@ -448,7 +448,7 @@ def export_conversation_to_md(messages, details):
 
 
 def render_sidebar_content(
-    system_status: Dict[str, bool],
+    system_status: Dict[str, Optional[bool]],
     agent_manager: Any,
 ):
     """Renderiza el contenido de la barra lateral con diseño mejorado."""
@@ -489,7 +489,9 @@ def render_sidebar_content(
         with st.expander("🔧 Sistema", expanded=False):
             st.caption("Estado de los componentes")
             for key, value in system_status.items():
-                if value:
+                if value is None:
+                    st.info(f"{key} (desactivado)", icon="⏸️")
+                elif value:
                     st.success(key, icon="✅")
                 else:
                     st.error(key, icon="❌")
@@ -595,6 +597,11 @@ def render_sidebar_content(
 
                 # Función para procesar modelos de diferentes proveedores
                 def process_provider_models(provider_name):
+                    # Proveedores apagados (disabled_providers) o sin cliente: fuera.
+                    if not agent_manager.proveedor_disponible(
+                        "openai" if provider_name == "openai" else provider_name
+                    ):
+                        return []
                     if provider_name in config and "models" in config[provider_name]:
                         provider_models = []
                         for model in config[provider_name]["models"]:
@@ -626,7 +633,10 @@ def render_sidebar_content(
                     ]
                 )
 
-                # Agregar modelos de otros proveedores
+                # Agregar modelos de otros proveedores (Ollama Cloud primero: es el
+                # motor principal; antes no aparecía en esta lista)
+                available_models.extend(process_provider_models("ollama_cloud"))
+                available_models.extend(process_provider_models("minimax"))
                 available_models.extend(process_provider_models("groq"))
                 available_models.extend(process_provider_models("together"))
                 available_models.extend(process_provider_models("deepinfra"))
@@ -642,12 +652,15 @@ def render_sidebar_content(
                 try:
                     # Usar la API de Ollama para obtener los modelos disponibles
                     response = requests.get(
-                        f"{config['ollama']['base_url']}/api/tags", timeout=5
+                        f"{config['ollama']['base_url'].rstrip('/')}/api/tags", timeout=5
                     )
                     if response.status_code == 200:
                         ollama_models = response.json().get("models", [])
                         for model in ollama_models:
                             model_name = model.get("name", "")
+                            # Los alias de nube (remote_host) no son modelos locales.
+                            if model.get("remote_host") or "cloud" in model_name:
+                                continue
                             if model_name:
                                 # Usar un nombre más descriptivo para la visualización
                                 display_name = f"Ollama: {model_name}"
@@ -988,8 +1001,14 @@ def render_sidebar_content(
                         import model_loader
 
                         # Actualizar caché de modelos
-                        openrouter_models = model_loader.load_models_from_openrouter()
-                        groq_models = model_loader.load_models_from_groq()
+                        openrouter_models = (
+                            model_loader.load_models_from_openrouter()
+                            if agent_manager.proveedor_disponible("openrouter") else []
+                        )
+                        groq_models = (
+                            model_loader.load_models_from_groq()
+                            if agent_manager.proveedor_disponible("groq") else []
+                        )
                         ollama_models = model_loader.load_models_from_ollama()
 
                         # Actualizar la lista de modelos disponibles
@@ -1165,7 +1184,7 @@ def render_sidebar_content(
 
 
 # Resumen de la conversación con un límite de longitud máximo (500 caracteres)
-# Si el contexto supera el límite, se utiliza cohere o OpenAI para resumirlo
+# Si el contexto supera el límite, se resume con la cascada `summary_models` (config.yaml)
 def summarize_conversation(
     previous_context, user_input, response, agent_manager, config, max_length=500
 ):
@@ -1175,27 +1194,20 @@ def summarize_conversation(
     if len(updated_context) > max_length:
         summary_prompt = f"Resume la siguiente conversación manteniendo los puntos clave:\n\n{updated_context}"
 
-        try:
-            # Intenta usar openrouter primero
-            # summary = agent_manager.process_with_openrouter(summary_prompt, config['openrouter']['fast_models'])
-            # Intenta usar cohere primero
-            summary = agent_manager.process_query(
-                summary_prompt, "cohere", config["cohere"]["default_model"]
-            )
-        except Exception as e:
-            log_error(
-                f"Error al usar cohere para resumen: {str(e)}. Usando OpenAI como respaldo."
-            )
+        # Cascada `summary_models` de config.yaml ("api:modelo"); antes era Cohere
+        # y OpenAI fijos, ambos desactivados.
+        for entrada in config.get("summary_models", []) or []:
+            api, _, modelo = str(entrada).partition(":")
+            if not agent_manager.proveedor_disponible(api):
+                continue
             try:
-                # Si cohere falla, usa OpenAI como respaldo
-                summary = agent_manager.process_query(
-                    summary_prompt, "api", config["openai"]["default_model"]
-                )
+                summary = agent_manager.process_query(summary_prompt, api, modelo)
+                break
             except Exception as e:
-                log_error(
-                    f"Error al usar OpenAI para resumen: {str(e)}. Devolviendo contexto sin resumir."
-                )
-                return updated_context
+                log_error(f"Error al resumir con {api}:{modelo}: {str(e)}")
+        else:
+            log_error("Ningún modelo de resumen disponible. Devolviendo contexto sin resumir.")
+            return updated_context
 
         return summary
 
@@ -1476,7 +1488,11 @@ def process_user_input(
                 # Intentar usar un modelo de OpenAI como respaldo
                 try:
                     prioritized_agents.append(
-                        ("api", "gpt-5-nano", "OpenAI GPT-3.5 Turbo (Respaldo)")
+                        (
+                            "ollama_cloud",
+                            config["ollama_cloud"]["default_model"],
+                            f"Ollama Cloud {config['ollama_cloud']['default_model']} (Respaldo)",
+                        )
                     )
                     logging.warning(
                         "No se encontraron agentes válidos en la configuración personalizada. Usando modelo de respaldo."

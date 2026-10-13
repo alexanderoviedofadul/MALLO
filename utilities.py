@@ -1,5 +1,5 @@
 import spacy
-from typing import Dict, Any, Tuple, List
+from typing import Dict, Any, Tuple, List, Optional
 from duckduckgo_search import DDGS
 import streamlit as st
 import hashlib
@@ -148,29 +148,35 @@ except Exception as e:
     nlp = None
 
 
-def initialize_system(config: Dict[str, Any]) -> Dict[str, bool]:
-    """Inicializa y verifica los componentes del sistema."""
-    # Proveedores activos primero; los desactivados (key comentada en secrets)
-    # y los demás componentes después.
-    status = {
-        # ── Activos ──
-        "DeepSeek API": check_deepseek_api(),
-        "Mistral API": check_mistral_api(),
-        "Ollama Cloud API": check_ollama_cloud_api(),
-        "MiniMax API (cedula360)": check_minimax_api(),
-        "Local Models": check_local_models(config),
-        "Web Search": check_web_search(),
-        # ── Resto / desactivados ──
-        "OpenAI API": check_openai_api(),
-        "Groq API": check_groq_api(),
-        "DeepInfra API": check_deepinfra_api(),
-        "Anthropic API": check_anthropic_api(),
-        "Cohere API": check_cohere_api(),
-        "OpenRouter API": check_openrouter_api(),
-        "Together API": check_together_api(),
-        "Z.AI API": check_z_ai_api(),
-        "RouteLLM API": check_routellm_api(),
-    }
+def initialize_system(config: Dict[str, Any]) -> Dict[str, Optional[bool]]:
+    """Inicializa y verifica los componentes del sistema.
+
+    Los proveedores listados en `disabled_providers` (config.yaml) no se
+    comprueban: valen None (el panel los muestra como desactivados) y el arranque
+    no les hace ninguna llamada.
+    """
+    desactivados = set(config.get("disabled_providers", []) or [])
+    comprobaciones = [
+        # (etiqueta del panel, proveedor en config.yaml, función de comprobación)
+        ("Ollama Cloud API", "ollama_cloud", check_ollama_cloud_api),
+        ("Mistral API", "mistral", check_mistral_api),
+        ("MiniMax API (cedula360)", "minimax", check_minimax_api),
+        ("Local Models", "ollama", lambda: check_local_models(config)),
+        ("Web Search", None, check_web_search),
+        ("DeepSeek API", "deepseek", check_deepseek_api),
+        ("OpenAI API", "openai", check_openai_api),
+        ("Groq API", "groq", check_groq_api),
+        ("DeepInfra API", "deepinfra", check_deepinfra_api),
+        ("Anthropic API", "anthropic", check_anthropic_api),
+        ("Cohere API", "cohere", check_cohere_api),
+        ("OpenRouter API", "openrouter", check_openrouter_api),
+        ("Together API", "together", check_together_api),
+        ("Z.AI API", "z-ai", check_z_ai_api),
+        ("RouteLLM API", "routellm", check_routellm_api),
+    ]
+    status: Dict[str, Optional[bool]] = {}
+    for etiqueta, proveedor, comprobar in comprobaciones:
+        status[etiqueta] = None if proveedor in desactivados else comprobar()
     logging.info(f"System status: {status}")
     return status
 
@@ -243,7 +249,7 @@ def check_groq_api() -> bool:
 
 def check_local_models(config: Dict[str, Any]) -> bool:
     try:
-        response = requests.get(f"{config['ollama']['base_url']}/api/tags")
+        response = requests.get(f"{config['ollama']['base_url'].rstrip('/')}/api/tags", timeout=5)
         return len(response.json()["models"]) > 0
     except Exception as e:
         logging.error(f"Error checking local models: {str(e)}")
@@ -466,10 +472,7 @@ def check_deepseek_api() -> bool:
 def check_mistral_api() -> bool:
     try:
         client = Mistral(api_key=secrets["MISTRAL_API_KEY"])
-        client.chat.complete(
-            model="mistral-small-latest",  # Modelo default de config.yaml
-            messages=[{"role": "user", "content": "Test"}]
-        )
+        client.models.list()  # sin gastar tokens
         return True
     except Exception as e:
         logging.error(f"Error checking Mistral API: {str(e)}")

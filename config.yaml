@@ -480,110 +480,18 @@ mistral:
     specialty: "general"
     capabilities: ["efficient_inference", "low_latency", "instruction_following"]
     prompt_types: ["general", "scientific", "cultural"]
-  - name: codestral-2508
-    specialty: coding
-    capabilities: [code_generation, advanced_reasoning, tool_use]
-    prompt_types: [coding, analytical, math, general]
-  - name: mistral-code-latest
-    specialty: coding
-    capabilities: [code_generation, advanced_reasoning, tool_use]
-    prompt_types: [coding, analytical, math, general]
-  - name: mistral-small-2603
-    specialty: general
-    capabilities: [efficient_inference, multilingual_support, thinking_mode]
-    prompt_types: [general, scientific, analytical, historical, cultural]
-  - name: magistral-small-latest
-    specialty: general
-    capabilities: [efficient_inference, multilingual_support]
-    prompt_types: [general, scientific, historical, cultural, legal]
-  - name: mistral-large-2512
-    specialty: general
-    capabilities: [advanced_reasoning, large_context, multilingual_support, thinking_mode]
-    prompt_types: [general, scientific, historical, philosophical, ethical, political, economic, analytical, legal]
-  - name: mistral-large-2512
-    specialty: general
-    capabilities: [advanced_reasoning, large_context, multilingual_support, thinking_mode]
-    prompt_types: [general, scientific, historical, philosophical, ethical, political, economic, analytical, legal]
-  - name: ministral-3b-2512
-    specialty: general
-    capabilities: [efficient_inference, multilingual_support, advanced_reasoning]
-    prompt_types: [general, scientific, historical, cultural, legal]
   - name: ministral-3b-latest
     specialty: general
     capabilities: [efficient_inference, multilingual_support, advanced_reasoning]
     prompt_types: [general, scientific, historical, cultural, legal]
-  - name: ministral-8b-2512
-    specialty: general
-    capabilities: [advanced_reasoning, large_context, multilingual_support]
-    prompt_types: [general, scientific, analytical, math, legal]
-  - name: ministral-14b-2512
-    specialty: general
-    capabilities: [advanced_reasoning, large_context, multilingual_support, thinking_mode]
-    prompt_types: [general, scientific, historical, philosophical, ethical, political, economic, analytical, legal]
   - name: ministral-14b-latest
     specialty: general
     capabilities: [advanced_reasoning, large_context, multilingual_support, thinking_mode]
     prompt_types: [general, scientific, historical, philosophical, ethical, political, economic, analytical, legal]
-  - name: mistral-medium
-    specialty: general
-    capabilities: [advanced_reasoning, large_context, multilingual_support, thinking_mode]
-    prompt_types: [general, scientific, historical, analytical, legal, math]
-  - name: mistral-medium-3-5
-    specialty: general
-    capabilities: [advanced_reasoning, large_context, multilingual_support, thinking_mode]
-    prompt_types: [general, scientific, historical, analytical, legal, math]
-  - name: mistral-medium-3.5
-    specialty: general
-    capabilities: [advanced_reasoning, large_context, multilingual_support, thinking_mode]
-    prompt_types: [general, scientific, historical, analytical, legal, math]
-  - name: mistral-medium-3
-    specialty: general
-    capabilities: [advanced_reasoning, large_context, multilingual_support, thinking_mode]
-    prompt_types: [general, scientific, historical, analytical, legal, math]
-  - name: mistral-medium-2604
-    specialty: general
-    capabilities: [advanced_reasoning, large_context, multilingual_support, thinking_mode]
-    prompt_types: [general, scientific, historical, analytical, legal, math]
-  - name: mistral-medium
-    specialty: general
-    capabilities: [advanced_reasoning, large_context, multilingual_support, thinking_mode]
-    prompt_types: [general, scientific, historical, analytical, legal, math]
-  - name: mistral-medium-3-5
-    specialty: general
-    capabilities: [advanced_reasoning, large_context, multilingual_support, thinking_mode]
-    prompt_types: [general, scientific, historical, analytical, legal, math]
-  - name: mistral-medium-3.5
-    specialty: general
-    capabilities: [advanced_reasoning, large_context, multilingual_support, thinking_mode]
-    prompt_types: [general, scientific, historical, analytical, legal, math]
-  - name: mistral-medium-3
-    specialty: general
-    capabilities: [advanced_reasoning, large_context, multilingual_support, thinking_mode]
-    prompt_types: [general, scientific, historical, analytical, legal, math]
-  - name: mistral-medium-2604
-    specialty: general
-    capabilities: [advanced_reasoning, large_context, multilingual_support, thinking_mode]
-    prompt_types: [general, scientific, historical, analytical, legal, math]
-  - name: magistral-medium-latest
-    specialty: general
-    capabilities: [advanced_reasoning, multilingual_support, large_context, efficient_inference]
-    prompt_types: [general, scientific, historical, cultural, analytical]
   - name: glm-5-2
     specialty: coding
     capabilities: [code_generation, agentic, large_context, advanced_reasoning]
     prompt_types: [coding, analytical, math, scientific, general]
-  - name: zai-glm-5-2
-    specialty: coding
-    capabilities: [code_generation, agentic, tool_use, large_context]
-    prompt_types: [coding, analytical, math, general, ethical]
-  - name: zai-glm-5-3
-    specialty: coding
-    capabilities: [code_generation, large_context, agentic, advanced_reasoning]
-    prompt_types: [coding, analytical, scientific, general]
-  - name: zai-glm-5
-    specialty: coding
-    capabilities: [code_generation, large_context, agentic, advanced_reasoning]
-    prompt_types: [coding, analytical, scientific, general]
   - name: zai-glm-latest
     specialty: general
     capabilities: [advanced_reasoning, large_context, multilingual_support, efficient_inference]
@@ -633,70 +541,30 @@ cohere:
     capabilities: [multilingual_support, efficient_inference, advanced_reasoning]
     prompt_types: [general, cultural, historical, political, legal]
 ollama:
-  base_url: https://ollama.alexanderoviedofadul.dev/ #"http://localhost:11434"
-  # Modelos locales realmente instalados (no-cloud) en el host Ollama (2026-06-23).
-  default_model: "gemma3:latest"  # 2026-10-04: phi3.5 se retiró del Ollama del VPS
+  # Ollama de ESTE servidor por loopback (antes iba por la URL pública y Caddy).
+  base_url: http://127.0.0.1:11434
+  # Solo modelos con pesos en local (2026-10-04). Los alias de nube (`:cloud`,
+  # `-cloud`) y los bladealex/* (sustitutos en Ollama Cloud con su SYSTEM, o
+  # personas de otros proyectos) NO son locales y no se listan aquí. El local
+  # es el ÚLTIMO recurso de la cascada (CPU, decenas de segundos con carga).
+  default_model: "gemma3:latest"
   models:
   - name: "gemma3:latest"
     specialty: "multimodal"
     capabilities: ["vision_understanding", "instruction_following", "efficient_inference"]
     prompt_types: ["general", "visual", "multimodal", "scientific", "cultural"]
-  - name: bladealex/putchi:latest
-    specialty: general
-    capabilities: [advanced_reasoning, multilingual_support, efficient_inference]
-    prompt_types: [general, cultural, ethical, philosophical]
-  - name: qwen3.5:397b-cloud
-    specialty: multimodal
-    capabilities: [large_context, vision_understanding, multilingual_support, advanced_reasoning]
-    prompt_types: [multimodal, visual, general, scientific, analytical]
-  - name: qwen3-coder:480b-cloud
-    specialty: coding
-    capabilities: [code_generation, large_context, advanced_reasoning, tool_use]
-    prompt_types: [coding, analytical, math, scientific]
-  - name: kimi-k2:1t-cloud
-    specialty: general
-    capabilities: [large_context, multilingual_support, efficient_inference, advanced_reasoning]
-    prompt_types: [general, cultural, political, economic]
-  - name: bladealex/tutelabot-air:latest
-    specialty: general
-    capabilities: [advanced_reasoning, multilingual_support, efficient_inference, thinking_mode]
-    prompt_types: [general, historical, philosophical, ethical]
-  - name: bladealex/vulnsentinel-pro:latest
-    specialty: coding
-    capabilities: [code_generation, tool_use, advanced_reasoning, large_context]
-    prompt_types: [coding, analytical, legal]
-  - name: bladealex/vulnsentinel:v2
-    specialty: coding
-    capabilities: [code_generation, tool_use, advanced_reasoning]
-    prompt_types: [coding, analytical, legal]
-  - name: gemma3:27b-cloud
-    specialty: general
-    capabilities: [efficient_inference, multilingual_support, large_context]
-    prompt_types: [general, scientific, historical, cultural]
-  - name: gemma4:31b-cloud
-    specialty: general
-    capabilities: [efficient_inference, multilingual_support, large_context]
-    prompt_types: [general, scientific, historical, cultural]
-  - name: gpt-oss:120b-cloud
-    specialty: general
-    capabilities: [large_context, advanced_reasoning, multilingual_support]
-    prompt_types: [general, scientific, analytical, philosophical]
-  - name: bladealex/tutelabot:latest
-    specialty: general
-    capabilities: [advanced_reasoning, multilingual_support, efficient_inference, thinking_mode]
-    prompt_types: [general, historical, cultural, ethical]
   - name: moondream:latest
     specialty: multimodal
-    capabilities: [vision_understanding, large_context, efficient_inference]
-    prompt_types: [multimodal, visual, general]
+    capabilities: [vision_understanding, efficient_inference]
+    prompt_types: [multimodal, visual]
   - name: translategemma:latest
     specialty: general
-    capabilities: [multilingual_support, efficient_inference, advanced_reasoning]
-    prompt_types: [general, cultural, scientific]
+    capabilities: [multilingual_support, efficient_inference]
+    prompt_types: [cultural]
 ollama_cloud:
   base_url: "https://ollama.com/v1"
-  fast_model: "gpt-oss:20b"          # Rápido y económico para respuestas inmediatas
-  default_model: "gpt-oss:120b"      # Predeterminado equilibrado (verificado funcional)
+  fast_model: "gemma4:31b"          # comprobación de arranque y tareas cortas (0,8 s, sin razonamiento)
+  default_model: "gpt-oss:120b"      # respuesta general: 2/2 correctas, 1,3 s (2026-10-04)
   max_tokens: 4000
   temperature: 0.7
   models:
@@ -709,10 +577,6 @@ ollama_cloud:
     specialty: "general"
     capabilities: ["low_latency", "instruction_following", "tool_use", "thinking_mode"]
     prompt_types: ["general", "scientific", "historical", "philosophical", "ethical", "cultural", "political", "economic"]
-  - name: "deepseek-v4-flash"
-    specialty: "general"
-    capabilities: ["efficient_inference", "advanced_reasoning", "large_context_1m"]
-    prompt_types: ["general", "scientific", "analytical", "coding"]
   - name: "mistral-large-3:675b"
     specialty: "general"
     capabilities: ["advanced_reasoning", "large_scale", "multilingual_support", "large_context"]
@@ -1413,15 +1277,15 @@ general:
   max_tokens: 1000
   temperature: 0.7
 
-# Prioridad de procesamiento
+# Prioridad de procesamiento (orden de los candidatos de una consulta)
 processing_priority:
 - assistant             # expertos especializados (cedula360 /api/legal) si aplican
-- ollama_cloud          # motor principal del flujo (benchmark por tarea)
-- deepseek              # fallback principal (v4-flash/v4-pro)
-- minimax
-- mistral
+- ollama_cloud          # motor principal del flujo (modelo por tarea: task_models)
+- mistral               # otro proveedor, respaldo
+- minimax               # MiniMax vía cedula360 (cuota del plan)
 - moa
-- ollama
+- ollama                # local: último recurso
+- deepseek
 - groq
 - openrouter
 - deepinfra
@@ -1431,6 +1295,30 @@ processing_priority:
 - openai
 - anthropic
 - cohere
+
+# Proveedores APAGADOS (2026-10-04): no se inicializan, no se comprueban al
+# arrancar y no entran en ninguna selección. Sus claves siguen en
+# .streamlit/secrets.toml (comentadas o no). Probado con una llamada real:
+#   deepseek    401 «Authentication Fails, your api key is invalid»
+#   routellm    402 «We could not confirm the last payment» (Abacus)
+#   openai      401 clave incorrecta · openrouter 401 «User not found»
+#   deepinfra   402 sin dirección de facturación · anthropic 400 sin saldo
+#   groq        clave válida, pero el catálogo de MALLO (groq/compound,
+#               llama-3.1-8b-instant) ya no existe en su API
+#   together, cohere, z-ai: responden 200, pero estaban comentados por decisión
+#               previa (prioridad Ollama Cloud); se dejan apagados.
+# Para reactivar uno: quitarlo de esta lista y descomentar su clave.
+disabled_providers:
+- deepseek
+- routellm
+- openai
+- openrouter
+- deepinfra
+- anthropic
+- groq
+- together
+- cohere
+- z-ai
 
 # Configuración de utilidades
 utilities:
@@ -1479,16 +1367,18 @@ usage_limits:
 
 # Configuración de MOA (Mixture of Agents)
 moa:
-  # MOA sobre Ollama Cloud (modelos del benchmark por tarea). El agregador y las
-  # propuestas se ejecutan con process_with_ollama_cloud (ver run_moa / run_multiple_models).
+  # MOA sobre Ollama Cloud. Agregador = el que mejor sintetizó en el meta-análisis
+  # medido (2026-10-04); propuestas de cuatro familias distintas. Se ejecutan con
+  # process_with_ollama_cloud (run_moa / run_multiple_models), de una en una.
   enabled: true
   api: "ollama_cloud"
-  aggregator_model: "gpt-oss:120b"      # mejor síntesis all-around (benchmark)
-  proposal_models:                      # diversidad de perspectivas para el MOA
-  - gemma4:31b
+  aggregator_model: "gpt-oss:120b"      # síntesis (medido)
+  max_concurrency: 1                    # la cuenta limita peticiones simultáneas
+  proposal_models:                      # familias distintas
+  - glm-5.3
+  - kimi-k3
   - mistral-large-3:675b
-  - gpt-oss:20b
-  - glm-5.2
+  - gemma4:31b
   max_layers: 3
   aggregator_system_prompt: "You are an expert aggregator. Synthesize the following responses into a single, coherent answer, taking into account the web context if provided."
 
@@ -1501,41 +1391,79 @@ thresholds:
   synthesis_complexity: 0.6  # Umbral para activar síntesis final
 
 # Configuración de evaluación de modelos
-# Cascadas por etapa según el benchmark (tools/benchmark_tasks.py): Ollama Cloud
-# principal + mejor DeepSeek como fallback. (Regenerar con el benchmark si cambian
-# los modelos: tools/benchmark_results.json.)
+# Elegidos el 2026-10-04 midiendo con los prompts REALES de cada etapa (main.py /
+# agents.py) y consultas reales de MALLO: docs/MODELOS-OLLAMA-CLOUD-POR-FLUJO-2026-10-04.md.
+# Respaldo 1: otra familia en Ollama Cloud; respaldo 2: Mistral (otro proveedor).
+# DeepSeek salió de todas las cascadas: su clave da 401.
 evaluation_models:
-  initial:                      # clasificación/evaluación rápida (tarea: classify)
+  initial:               # guía + COMPLEJIDAD/BUSQUEDA_WEB (4/4, 3,3 s)
     api: "ollama_cloud"
-    model: "gemma4:31b"         # top en classify, latencia mínima
-    backup_api: "deepseek"
-    backup_model: "deepseek-v4-flash"
-    backup_api2: "ollama_cloud"
-    backup_model2: "mistral-large-3:675b"
-  final:                        # evaluación final / síntesis (tarea: general/reasoning)
+    model: "gemma4:31b"
+    backup_api: "ollama_cloud"
+    backup_model: "gpt-oss:20b"
+    backup_api2: "mistral"
+    backup_model2: "mistral-small-latest"
+  final:                 # evaluar y mejorar la respuesta (2/2, 3,6 s)
     api: "ollama_cloud"
-    model: "gpt-oss:120b"       # top calidad+latencia en general/reasoning (benchmark)
-    backup_api: "deepseek"
-    backup_model: "deepseek-v4-flash"
-    backup_api2: "ollama_cloud"
-    backup_model2: "mistral-large-3:675b"
-  meta_analysis:                # meta-análisis / resumen (tarea: summary/reasoning)
+    model: "gpt-oss:120b"
+    backup_api: "ollama_cloud"
+    backup_model: "glm-5.3"
+    backup_api2: "mistral"
+    backup_model2: "mistral-large-latest"
+  meta_analysis:         # sintetizar y elegir la correcta (1/1, 3,9 s)
     api: "ollama_cloud"
-    model: "mistral-large-3:675b" # top en summary (benchmark)
-    backup_api: "deepseek"
-    backup_model: "deepseek-v4-flash"
-    backup_api2: "ollama_cloud"
-    backup_model2: "glm-5.2"
+    model: "gpt-oss:120b"
+    backup_api: "ollama_cloud"
+    backup_model: "kimi-k3"
+    backup_api2: "mistral"
+    backup_model2: "mistral-large-latest"
+
+# Cascada de respaldo cuando falla el agente elegido (process_query): se prueba
+# el primero disponible que no se haya probado ya. El local es el último recurso.
+fallback_agents:
+- "ollama_cloud:gpt-oss:120b"
+- "ollama_cloud:glm-5.3"   # otra familia
+- "mistral:mistral-large-latest"   # otro proveedor
+- "local:gemma3:latest"   # CPU local, último recurso
+
+# Resumen del contexto de conversación (main.py::summarize_conversation)
+summary_models:
+- "ollama_cloud:gpt-oss:20b"   # 2/2, 2,8-4,1 s
+- "mistral:mistral-small-latest"   # otro proveedor (2/2)
+
+# Modelo por tipo de consulta (agents.py::get_prioritized_agents). Un agente por
+# proveedor; "assistant:auto" = experto jurídico de cedula360 elegido por palabras clave.
+task_models:
+  general:
+  - "ollama_cloud:gpt-oss:120b"
+  - "mistral:mistral-large-latest"
+  coding:
+  - "ollama_cloud:gpt-oss:120b"
+  - "mistral:codestral-latest"
+  math:
+  - "ollama_cloud:gpt-oss:120b"
+  - "mistral:mistral-large-latest"
+  analytical:
+  - "ollama_cloud:gpt-oss:120b"
+  - "mistral:mistral-large-latest"
+  legal:
+  - "assistant:auto"
+  - "ollama_cloud:gpt-oss:120b"
+  - "mistral:mistral-large-latest"
+  colombian_context:
+  - "assistant:auto"
+  - "ollama_cloud:gpt-oss:120b"
+  - "mistral:mistral-large-latest"
 
 # Configuración de selección de prompts para los agentes
 prompt_selection:
-  default_model: "cohere:command-r-08-2024"  # Modelo por defecto para selección de prompt
+  default_model: "ollama_cloud:gemma4:31b"  # validación del tipo de consulta (medido)
   fallback_type: "default"  # Tipo de prompt a usar si no se puede determinar
   threshold: 0.6  # Umbral de confianza para la selección automática
 
 # Configuración de selección de agentes
 agent_selection:
-  default_model: "cohere:command-r-08-2024"
+  default_model: "ollama_cloud:gemma4:31b"
   fallback_type: "Asistente de Inteligencia Artificial"
   threshold: 0.6
-  validation_model: "command-r-08-2024"
+  validation_model: "ollama_cloud:gemma4:31b"

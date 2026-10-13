@@ -9,10 +9,10 @@
   },
   "models": {
     "primary": [
-      "openrouter:cohere/command-r:free"
+      "ollama_cloud:gpt-oss:120b"
     ],
     "fallback": [
-      "groq:gemma2-9b-it"
+      "mistral:mistral-large-latest"
     ]
   },
   "agent_count": 1

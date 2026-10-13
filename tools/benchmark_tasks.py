@@ -1,11 +1,22 @@
 #!/usr/bin/env python3
-"""Benchmark por tarea: ¿qué modelo de Ollama Cloud (y de DeepSeek) responde
-mejor cada tipo de tarea de MALLO? Mide latencia + calidad (LLM-judge) y
-propone, por tarea: cascada de Ollama Cloud (top-3) + mejor fallback DeepSeek.
+"""Benchmark por tarea: ¿qué modelo VIGENTE de Ollama Cloud responde mejor cada
+tipo de tarea de MALLO? Mide latencia + calidad (LLM-judge) y propone, por
+tarea, una cascada de Ollama Cloud (top-3).
+
+Desde 2026-10-04 es un INFORME: el timer mensual lo corre sin --apply. Las
+cascadas de config.yaml se eligieron midiendo con los prompts reales de cada
+flujo (docs/MODELOS-OLLAMA-CLOUD-POR-FLUJO-2026-10-04.md); seis tareas de
+juguete juzgadas por un LLM no bastan para cambiarlas solas. Antes, --apply
+instaló qwen3-coder:480b (luego retirado) y DeepSeek como respaldo de todas las
+etapas con su clave ya inválida.
+
+Los candidatos salen del catálogo vigente (https://ollama.com/api/tags), así
+que un modelo retirado deja de medirse sin tocar este fichero.
 
 Uso:
-  python3 tools/benchmark_tasks.py            # corrida completa
+  python3 tools/benchmark_tasks.py            # corrida completa (informe)
   python3 tools/benchmark_tasks.py --quick    # menos candidatos
+  python3 tools/benchmark_tasks.py --apply    # además escribe evaluation_models/moa
 Salida: tools/benchmark_results.json
 """
 import argparse
@@ -21,7 +32,6 @@ load_secrets()
 from openai import OpenAI  # noqa: E402
 
 OLLAMA = OpenAI(api_key=get_secret("OLLAMA_CLOUD_API_KEY"), base_url="https://ollama.com/v1")
-DEEPSEEK = OpenAI(api_key=get_secret("DEEPSEEK_API_KEY"), base_url="https://api.deepseek.com/v1")
 JUDGE_MODEL = "gpt-oss:120b"   # juez (Ollama Cloud)
 
 # Tareas DISCRIMINANTES del flujo de MALLO (difíciles, con respuesta verificable,
@@ -41,29 +51,28 @@ TASKS = [
      "criterio": "clasificación correcta = math (cálculo financiero), respuesta de UNA palabra sin texto extra"},
 ]
 
-# Candidatos de Ollama Cloud (provider=ollama_cloud) y DeepSeek (provider=deepseek)
-CANDIDATES = [
-    ("ollama_cloud", "gpt-oss:120b"),
-    ("ollama_cloud", "gpt-oss:20b"),
-    ("ollama_cloud", "deepseek-v3.2"),
-    ("ollama_cloud", "glm-5.2"),
-    ("ollama_cloud", "qwen3-coder:480b"),
-    ("ollama_cloud", "mistral-large-3:675b"),
-    ("ollama_cloud", "minimax-m3"),
-    ("ollama_cloud", "gemma4:31b"),
-    ("deepseek", "deepseek-v4-flash"),
-    ("deepseek", "deepseek-v4-pro"),
-]
-QUICK = [
-    ("ollama_cloud", "gpt-oss:120b"),
-    ("ollama_cloud", "deepseek-v3.2"),
-    ("ollama_cloud", "qwen3-coder:480b"),
-    ("deepseek", "deepseek-v4-flash"),
-]
+# Candidatos: el catálogo vigente de Ollama Cloud, menos los que no son de chat
+# general. (DeepSeek directo salió el 2026-10-04: su clave da 401.)
+NO_CANDIDATOS = {"nemotron-3-nano:30b"}  # 30B de razonamiento corto, no compite aquí
+
+
+def catalogo_vigente():
+    import httpx
+    r = httpx.get("https://ollama.com/api/tags", timeout=30)
+    r.raise_for_status()
+    return [m["name"] for m in r.json().get("models", [])]
+
+
+def candidatos(quick=False):
+    vig = [m for m in catalogo_vigente() if m not in NO_CANDIDATOS]
+    if quick:
+        prefer = ["gpt-oss:120b", "glm-5.3", "kimi-k3", "gemma4:31b"]
+        vig = [m for m in prefer if m in vig]
+    return [("ollama_cloud", m) for m in vig]
 
 
 def generate(provider, model, prompt):
-    client = OLLAMA if provider == "ollama_cloud" else DEEPSEEK
+    client = OLLAMA
     t = time.time()
     try:
         r = client.chat.completions.create(
@@ -107,7 +116,7 @@ def main():
     ap.add_argument("--apply", action="store_true",
                     help="escribe las cascadas en config.yaml (evaluation_models + moa)")
     args = ap.parse_args()
-    cands = QUICK if args.quick else CANDIDATES
+    cands = candidatos(args.quick)
 
     results = {t["id"]: [] for t in TASKS}
     for task in TASKS:
@@ -132,15 +141,11 @@ def main():
     for tid, rows in results.items():
         rows.sort(key=lambda r: (-r["combined"], r["latency"]))
         oc = [r for r in rows if r["provider"] == "ollama_cloud"]
-        ds = [r for r in rows if r["provider"] == "deepseek"]
         cascada = [r["model"] for r in oc[:3]]
-        fallback = ds[0]["model"] if ds else None
         summary[tid] = {"cascada_ollama_cloud": cascada,
-                        "fallback_deepseek": fallback,
                         "ranking": rows}
         print(f"\n[{tid}]")
         print(f"  cascada (Ollama Cloud): {cascada}")
-        print(f"  fallback (DeepSeek):    {fallback}")
 
     with open(os.path.join(ROOT, "tools", "benchmark_results.json"), "w") as f:
         json.dump(summary, f, ensure_ascii=False, indent=2)
@@ -150,11 +155,16 @@ def main():
         apply_to_config(summary)
 
 
+def _familia(m):
+    return m.split(":")[0].split("-")[0]
+
+
 def apply_to_config(summary):
     """Escribe las cascadas del benchmark en config.yaml (evaluation_models + moa).
 
     Mapeo etapa→tarea: initial←classify, final←general, meta_analysis←summary.
-    Preserva formato con ruamel y hace backup. Solo toca esas dos secciones.
+    Respaldo 1: el mejor de OTRA familia en Ollama Cloud; respaldo 2: Mistral
+    (otro proveedor). Copia previa en /root/backups/MALLO/config-bak/.
     """
     import datetime
     import shutil
@@ -164,25 +174,24 @@ def apply_to_config(summary):
     def casc(task):
         return summary.get(task, {}).get("cascada_ollama_cloud", []) or ["gpt-oss:120b"]
 
-    def ds(task):
-        return summary.get(task, {}).get("fallback_deepseek") or "deepseek-v4-flash"
-
     yaml = YAML()
     yaml.preserve_quotes = True
     yaml.width = 4096
     yaml.allow_duplicate_keys = True
     cfg_path = os.path.join(ROOT, "config.yaml")
     cfg = yaml.load(open(cfg_path))
+    mistral_default = cfg.get("mistral", {}).get("default_model", "mistral-small-latest")
 
     em = cfg["evaluation_models"]
     for stage, task in (("initial", "classify"), ("final", "general"), ("meta_analysis", "summary")):
         c = casc(task)
+        otra = next((m for m in c[1:] if _familia(m) != _familia(c[0])), c[1] if len(c) > 1 else c[0])
         em[stage]["api"] = "ollama_cloud"
         em[stage]["model"] = c[0]
-        em[stage]["backup_api"] = "deepseek"
-        em[stage]["backup_model"] = ds(task)
-        em[stage]["backup_api2"] = "ollama_cloud"
-        em[stage]["backup_model2"] = c[1] if len(c) > 1 else c[0]
+        em[stage]["backup_api"] = "ollama_cloud"
+        em[stage]["backup_model"] = otra
+        em[stage]["backup_api2"] = "mistral"
+        em[stage]["backup_model2"] = mistral_default
 
     agg = casc("general")[0]
     cfg["moa"]["api"] = "ollama_cloud"
@@ -195,10 +204,12 @@ def apply_to_config(summary):
     cfg["moa"]["proposal_models"] = CommentedSeq(pool[:4] or [agg])
 
     ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    shutil.copy2(cfg_path, f"{cfg_path}.bak.bench-{ts}")
+    bak_dir = "/root/backups/MALLO/config-bak"
+    os.makedirs(bak_dir, exist_ok=True)
+    shutil.copy2(cfg_path, os.path.join(bak_dir, f"config.yaml.bak.bench-{ts}"))
     with open(cfg_path, "w") as f:
         yaml.dump(cfg, f)
-    print(f"=== config.yaml actualizado con las cascadas (backup .bak.bench-{ts}) ===")
+    print(f"=== config.yaml actualizado con las cascadas (backup {bak_dir}/config.yaml.bak.bench-{ts}) ===")
     print(f"  evaluation_models.final/meta = {agg} | initial = {casc('classify')[0]}")
 
 
